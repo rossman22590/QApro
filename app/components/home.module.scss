@@ -89,20 +89,22 @@
 }
 
 .sidebar-header {
-  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   padding-top: 20px;
   padding-bottom: 20px;
 }
 
-.sidebar-logo {
-  position: absolute;
-  right: 0;
-  bottom: 18px;
+.sidebar-title {
+  font-size: 22px;
+  font-weight: bold;
 }
 
-.sidebar-title {
+.sidebar-title-pro {
   font-size: 20px;
   font-weight: bold;
+  color: rgb(249, 207, 108);
 }
 
 .sidebar-sub-title {
@@ -203,8 +205,31 @@
   display: inline-flex;
 }
 
+.sidebar-action-pay {
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration-line: none;
+  color: rgb(255, 83, 9);
+}
+
 .sidebar-action:not(:last-child) {
   margin-right: 15px;
+}
+
+.sidebar-links {
+  margin-top: 10px;
+  font-size: 13px;
+}
+
+.sidebar-links {
+  color: antiquewhite;
+  a {
+    text-decoration: none;
+    color: antiquewhite;
+    &:hover {
+      border-bottom: 1px dashed antiquewhite;
+    }
+  }
 }
 
 .chat {

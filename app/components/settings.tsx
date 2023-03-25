@@ -124,12 +124,10 @@ export function Settings(props: { closeSettings: () => void }) {
                   }}
                 />
               }
-              open={showEmojiPicker}
-            >
+              open={showEmojiPicker}>
               <div
                 className={styles.avatar}
-                onClick={() => setShowEmojiPicker(true)}
-              >
+                onClick={() => setShowEmojiPicker(true)}>
                 <Avatar role="user" />
               </div>
             </Popover>
@@ -143,8 +141,7 @@ export function Settings(props: { closeSettings: () => void }) {
                 : hasNewVersion
                 ? Locale.Settings.Update.FoundUpdate(remoteId ?? "ERROR")
                 : Locale.Settings.Update.IsLatest
-            }
-          >
+            }>
             {checkingUpdate ? (
               <div />
             ) : hasNewVersion ? (
@@ -168,8 +165,7 @@ export function Settings(props: { closeSettings: () => void }) {
                   (config) =>
                     (config.submitKey = e.target.value as any as SubmitKey)
                 );
-              }}
-            >
+              }}>
               {Object.values(SubmitKey).map((v) => (
                 <option value={v} key={v}>
                   {v}
@@ -188,8 +184,7 @@ export function Settings(props: { closeSettings: () => void }) {
                 updateConfig(
                   (config) => (config.theme = e.target.value as any as Theme)
                 );
-              }}
-            >
+              }}>
               {Object.values(Theme).map((v) => (
                 <option value={v} key={v}>
                   {v}
@@ -204,8 +199,7 @@ export function Settings(props: { closeSettings: () => void }) {
                 value={getLang()}
                 onChange={(e) => {
                   changeLang(e.target.value as any);
-                }}
-              >
+                }}>
                 <option value="en" key="en">
                   {Locale.Settings.Lang.Options.en}
                 </option>
@@ -226,16 +220,28 @@ export function Settings(props: { closeSettings: () => void }) {
                   updateConfig(
                     (config) => (config.fullScreen = e.currentTarget.checked)
                   )
-                }
-              ></input>
+                }></input>
             </SettingItem>
           </div>
         </List>
         <List>
           <SettingItem
+            title={Locale.Settings.ApiKey.Title}
+            subTitle={Locale.Settings.ApiKey.SubTitle}>
+            <input
+              type="text"
+              placeholder="🗝"
+              value={config.modelConfig.apiKey}
+              onChange={(e) =>
+                updateConfig(
+                  (config) =>
+                    (config.modelConfig.apiKey = e.currentTarget.value)
+                )
+              }></input>
+          </SettingItem>
+          <SettingItem
             title={Locale.Settings.HistoryCount.Title}
-            subTitle={Locale.Settings.HistoryCount.SubTitle}
-          >
+            subTitle={Locale.Settings.HistoryCount.SubTitle}>
             <input
               type="range"
               title={config.historyMessageCount.toString()}
@@ -248,14 +254,12 @@ export function Settings(props: { closeSettings: () => void }) {
                   (config) =>
                     (config.historyMessageCount = e.target.valueAsNumber)
                 )
-              }
-            ></input>
+              }></input>
           </SettingItem>
 
           <SettingItem
             title={Locale.Settings.CompressThreshold.Title}
-            subTitle={Locale.Settings.CompressThreshold.SubTitle}
-          >
+            subTitle={Locale.Settings.CompressThreshold.SubTitle}>
             <input
               type="number"
               min={500}
@@ -267,8 +271,7 @@ export function Settings(props: { closeSettings: () => void }) {
                     (config.compressMessageLengthThreshold =
                       e.currentTarget.valueAsNumber)
                 )
-              }
-            ></input>
+              }></input>
           </SettingItem>
         </List>
 
@@ -280,8 +283,7 @@ export function Settings(props: { closeSettings: () => void }) {
                 updateConfig(
                   (config) => (config.modelConfig.model = e.currentTarget.value)
                 );
-              }}
-            >
+              }}>
               {ALL_MODELS.map((v) => (
                 <option value={v.name} key={v.name} disabled={!v.available}>
                   {v.name}
@@ -291,8 +293,7 @@ export function Settings(props: { closeSettings: () => void }) {
           </SettingItem>
           <SettingItem
             title={Locale.Settings.Temperature.Title}
-            subTitle={Locale.Settings.Temperature.SubTitle}
-          >
+            subTitle={Locale.Settings.Temperature.SubTitle}>
             <input
               type="range"
               value={config.modelConfig.temperature.toFixed(1)}
@@ -305,13 +306,11 @@ export function Settings(props: { closeSettings: () => void }) {
                     (config.modelConfig.temperature =
                       e.currentTarget.valueAsNumber)
                 );
-              }}
-            ></input>
+              }}></input>
           </SettingItem>
           <SettingItem
             title={Locale.Settings.MaxTokens.Title}
-            subTitle={Locale.Settings.MaxTokens.SubTitle}
-          >
+            subTitle={Locale.Settings.MaxTokens.SubTitle}>
             <input
               type="number"
               min={100}
@@ -323,13 +322,11 @@ export function Settings(props: { closeSettings: () => void }) {
                     (config.modelConfig.max_tokens =
                       e.currentTarget.valueAsNumber)
                 )
-              }
-            ></input>
+              }></input>
           </SettingItem>
           <SettingItem
             title={Locale.Settings.PresencePenlty.Title}
-            subTitle={Locale.Settings.PresencePenlty.SubTitle}
-          >
+            subTitle={Locale.Settings.PresencePenlty.SubTitle}>
             <input
               type="range"
               value={config.modelConfig.presence_penalty.toFixed(1)}
@@ -342,8 +339,7 @@ export function Settings(props: { closeSettings: () => void }) {
                     (config.modelConfig.presence_penalty =
                       e.currentTarget.valueAsNumber)
                 );
-              }}
-            ></input>
+              }}></input>
           </SettingItem>
         </List>
       </div>

@@ -7,7 +7,7 @@ import styles from "./home.module.scss";
 
 import SettingsIcon from "../icons/settings.svg";
 import GithubIcon from "../icons/github.svg";
-import PayIcon from "../icons/pay.svg"
+import PayIcon from "../icons/pay.svg";
 import ChatGptIcon from "../icons/chatgpt.svg";
 import SendWhiteIcon from "../icons/send-white.svg";
 import BrainIcon from "../icons/brain.svg";
@@ -229,10 +229,11 @@ export function Chat(props: { showSideBar?: () => void }) {
   const onUserInput = useChatStore((state) => state.onUserInput);
   const onUserSubmit = () => {
     if (isLoading || userInput.length <= 0) return;
-    
+
     autoScrolling = true;
-    startAutoScroll()
+    startAutoScroll();
     setIsLoading(true);
+
     onUserInput(userInput).then(() => setIsLoading(false));
     setUserInput("");
   };
@@ -263,7 +264,7 @@ export function Chat(props: { showSideBar?: () => void }) {
       autoScrolling = false;
     }
   };
-  const eventHandler = (e:any) => {
+  const eventHandler = (e: any) => {
     if (e.type === "keydown") {
       if (e.key !== "ArrowUp" && e.key !== "ArrowDown") {
         return;
@@ -271,7 +272,7 @@ export function Chat(props: { showSideBar?: () => void }) {
     }
     stopAutoScroll();
   };
-  
+
   const latestMessageRef = useRef<HTMLDivElement>(null);
 
   const [hoveringMessage, setHoveringMessage] = useState(false);
@@ -306,7 +307,7 @@ export function Chat(props: { showSideBar?: () => void }) {
     eventTypes.forEach((type) => {
       window.addEventListener(type, eventHandler, { passive: false });
     });
-    startAutoScroll()
+    startAutoScroll();
   });
 
   return (
@@ -354,14 +355,7 @@ export function Chat(props: { showSideBar?: () => void }) {
         </div>
       </div>
 
-      <div
-        className={styles["chat-body"]}
-        onMouseOver={() => {
-          setHoveringMessage(true);
-        }}
-        onMouseOut={() => {
-          setHoveringMessage(false);
-        }}>
+      <div className={styles["chat-body"]}>
         {messages.map((message, i) => {
           const isUser = message.role === "user";
 
@@ -381,7 +375,14 @@ export function Chat(props: { showSideBar?: () => void }) {
                   </div>
                 )}
                 <div className={styles["chat-message-item"]}>
-                  <div className={styles[isUser ? "chat-message-top-actions-user" : "chat-message-top-actions"]}>
+                  <div
+                    className={
+                      styles[
+                        isUser
+                          ? "chat-message-top-actions-user"
+                          : "chat-message-top-actions"
+                      ]
+                    }>
                     {!isUser && message.streaming && (
                       <div
                         className={styles["chat-message-top-action"]}
@@ -481,8 +482,9 @@ export function Home() {
           styles.sidebar + ` ${showSideBar && styles["sidebar-show"]}`
         }>
         <div className={styles["sidebar-header"]}>
-          <div className={styles["sidebar-title"]}>QAChat Pro</div>
-          <div className={styles["sidebar-sub-title"]}>你的智慧 Ai 助手.</div>
+          <div className={styles["sidebar-title"]}>
+            QAChat <span className={styles["sidebar-title-pro"]}>𝐏𝐫𝐨</span>
+          </div>
           <div className={styles["sidebar-logo"]}>
             <BotIcon />
           </div>
@@ -509,7 +511,7 @@ export function Home() {
                 }}
               />
             </div>
-            <div className={styles["sidebar-action"]}>
+            <div className={styles["sidebar-action"]} title="设置">
               <IconButton
                 icon={<SettingsIcon />}
                 onClick={() => {
@@ -518,14 +520,17 @@ export function Home() {
                 }}
               />
             </div>
-            <div className={styles["sidebar-action"]}>
+            <div className={styles["sidebar-action"]} title="源码">
               <a href={REPO_URL} target="_blank">
                 <IconButton icon={<GithubIcon />} />
               </a>
             </div>
-            <div className={styles["sidebar-action"]}>
-              <a href={PAY_URL} target="_blank">
-                <IconButton icon={<PayIcon /> }/>
+            <div className={styles["sidebar-action"]} title="打赏">
+              <a
+                className={styles["sidebar-action-pay"]}
+                href={PAY_URL}
+                target="_blank">
+                <IconButton icon={<span>赏</span>} />
               </a>
             </div>
           </div>
@@ -536,6 +541,12 @@ export function Home() {
               onClick={createNewSession}
             />
           </div>
+        </div>
+        <div className={styles["sidebar-links"]}>
+          <a href="https://shop.terobox.com/?from=1127" target="_blank">
+            购买ChatGPT密钥/账号
+          </a>
+          ·<a href="">推广</a>·<a href="">合作</a>
         </div>
       </div>
 

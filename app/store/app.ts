@@ -36,6 +36,7 @@ export interface ChatConfig {
   fullScreen: boolean;
 
   modelConfig: {
+    apiKey: string;
     model: string;
     temperature: number;
     max_tokens: number;
@@ -80,10 +81,17 @@ export function isValidNumber(x: number, min: number, max: number) {
   return typeof x === "number" && x <= max && x >= min;
 }
 
+export function isValidString(x: string) {
+  return typeof x === "string";
+}
+
 export function filterConfig(config: ModelConfig): Partial<ModelConfig> {
   const validator: {
     [k in keyof ModelConfig]: (x: ModelConfig[keyof ModelConfig]) => boolean;
   } = {
+    apiKey(x) {
+      return isValidString(x as string);
+    },
     model(x) {
       return isValidModel(x as string);
     },
@@ -118,6 +126,7 @@ const DEFAULT_CONFIG: ChatConfig = {
   fullScreen: true,
 
   modelConfig: {
+    apiKey: "",
     model: "gpt-3.5-turbo",
     temperature: 1,
     max_tokens: 2000,

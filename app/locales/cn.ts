@@ -1,3 +1,5 @@
+import { PAY_URL } from "./../constant";
+
 const cn = {
   WIP: "该功能仍在开发中……",
   ChatItem: {
@@ -70,6 +72,10 @@ const cn = {
       Title: "随机性 (temperature)",
       SubTitle: "值越大，回复越随机",
     },
+    ApiKey: {
+      Title: "OpenAI Api 密钥",
+      SubTitle: "用户私有 OpenAI Api 密钥 (仅本地存储，无任何上传)",
+    },
     MaxTokens: {
       Title: "单次回复限制 (max_tokens)",
       SubTitle: "单次交互所用的最大 Token 数",
@@ -81,8 +87,8 @@ const cn = {
   },
   Store: {
     DefaultTopic: "新的对话",
-    BotHello: "有什么可以帮你的吗",
-    Error: "出错了，稍后重试吧",
+    BotHello: `喵, 有什么可以帮你的吗？\n\n提示：\n\n🍡输入内容按 Enter 发送(设置可修改); \n\n🍢单击右键复制内容 \n\n 🍬打开设置面板调节 GPT 参数  \n\n 🍭你的 [打赏](${PAY_URL}) 就是我的动力~`,
+    Error: "服务器开小差了，请稍后再试。",
     Prompt: {
       History: (content: string) =>
         "这是 ai 和用户的历史聊天总结作为前情提要：" + content,
