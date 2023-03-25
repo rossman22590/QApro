@@ -33,7 +33,7 @@ export interface ChatConfig {
   submitKey: SubmitKey;
   avatar: string;
   theme: Theme;
-  tightBorder: boolean;
+  fullScreen: boolean;
 
   modelConfig: {
     model: string;
@@ -115,7 +115,7 @@ const DEFAULT_CONFIG: ChatConfig = {
   submitKey: SubmitKey.Enter as SubmitKey,
   avatar: "1f914",
   theme: Theme.Auto as Theme,
-  tightBorder: false,
+  fullScreen: true,
 
   modelConfig: {
     model: "gpt-3.5-turbo",

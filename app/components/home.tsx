@@ -7,6 +7,7 @@ import styles from "./home.module.scss";
 
 import SettingsIcon from "../icons/settings.svg";
 import GithubIcon from "../icons/github.svg";
+import PayIcon from "../icons/pay.svg"
 import ChatGptIcon from "../icons/chatgpt.svg";
 import SendWhiteIcon from "../icons/send-white.svg";
 import BrainIcon from "../icons/brain.svg";
@@ -27,7 +28,7 @@ import { copyToClipboard, downloadAs, isIOS, selectOrCopy } from "../utils";
 import Locale from "../locales";
 
 import dynamic from "next/dynamic";
-import { REPO_URL } from "../constant";
+import { REPO_URL, PAY_URL } from "../constant";
 
 export function Loading(props: { noLogo?: boolean }) {
   return (
@@ -444,7 +445,7 @@ export function Home() {
   return (
     <div
       className={`${
-        config.tightBorder ? styles["tight-container"] : styles.container
+        config.fullScreen ? styles["tight-container"] : styles.container
       }`}>
       <div
         className={
@@ -454,7 +455,7 @@ export function Home() {
           <div className={styles["sidebar-title"]}>QAChat Pro</div>
           <div className={styles["sidebar-sub-title"]}>你的智慧 Ai 助手.</div>
           <div className={styles["sidebar-logo"]}>
-            <ChatGptIcon />
+            <BotIcon />
           </div>
         </div>
 
@@ -491,6 +492,11 @@ export function Home() {
             <div className={styles["sidebar-action"]}>
               <a href={REPO_URL} target="_blank">
                 <IconButton icon={<GithubIcon />} />
+              </a>
+            </div>
+            <div className={styles["sidebar-action"]}>
+              <a href={PAY_URL} target="_blank">
+                <IconButton icon={<PayIcon /> }/>
               </a>
             </div>
           </div>

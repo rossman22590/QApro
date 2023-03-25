@@ -73,7 +73,8 @@
 }
 
 body {
-  background-color: var(--gray);
+  background: linear-gradient(to bottom, #b8d8d2, #95bcb5, #739e99);
+  // background: linear-gradient(to bottom, #95bcb5, #8da4a0);
   color: var(--black);
   margin: 0;
   padding: 0;
