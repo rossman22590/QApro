@@ -59,7 +59,7 @@ export async function requestChatStream(
     Object.assign(req, filterConfig(options.modelConfig));
   }
 
-  console.log("[Request] ", req);
+  // console.log("[Request] ", req);
 
   const controller = new AbortController();
   const reqTimeoutId = setTimeout(() => controller.abort(), TIME_OUT_MS);

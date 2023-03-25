@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
-
+import throttle from "just-throttle";
 import { IconButton } from "./button";
 import styles from "./home.module.scss";
 
@@ -50,6 +50,102 @@ const Settings = dynamic(async () => (await import("./settings")).Settings, {
 const Emoji = dynamic(async () => (await import("emoji-picker-react")).Emoji, {
   loading: () => <LoadingIcon />,
 });
+
+function useSubmitHandler() {
+  const config = useChatStore((state) => state.config);
+  const submitKey = config.submitKey;
+
+  const shouldSubmit = (e: KeyboardEvent) => {
+    if (e.key !== "Enter") return false;
+
+    return (
+      (config.submitKey === SubmitKey.AltEnter && e.altKey) ||
+      (config.submitKey === SubmitKey.CtrlEnter && e.ctrlKey) ||
+      (config.submitKey === SubmitKey.ShiftEnter && e.shiftKey) ||
+      (config.submitKey === SubmitKey.Enter &&
+        !e.altKey &&
+        !e.ctrlKey &&
+        !e.shiftKey)
+    );
+  };
+
+  return {
+    submitKey,
+    shouldSubmit,
+  };
+}
+
+function useSwitchTheme() {
+  const config = useChatStore((state) => state.config);
+
+  useEffect(() => {
+    document.body.classList.remove("light");
+    document.body.classList.remove("dark");
+    if (config.theme === "dark") {
+      document.body.classList.add("dark");
+    } else if (config.theme === "light") {
+      document.body.classList.add("light");
+    }
+  }, [config.theme]);
+}
+
+function exportMessages(messages: Message[], topic: string) {
+  const mdText =
+    `# ${topic}\n\n` +
+    messages
+      .map((m) => {
+        return m.role === "user" ? `## ${m.content}` : m.content.trim();
+      })
+      .join("\n\n");
+  const filename = `${topic}.md`;
+
+  showModal({
+    title: Locale.Export.Title,
+    children: (
+      <div className="markdown-body">
+        <pre className={styles["export-content"]}>{mdText}</pre>
+      </div>
+    ),
+    actions: [
+      <IconButton
+        key="copy"
+        icon={<CopyIcon />}
+        bordered
+        text={Locale.Export.Copy}
+        onClick={() => copyToClipboard(mdText)}
+      />,
+      <IconButton
+        key="download"
+        icon={<DownloadIcon />}
+        bordered
+        text={Locale.Export.Download}
+        onClick={() => downloadAs(mdText, filename)}
+      />,
+    ],
+  });
+}
+
+function showMemoryPrompt(session: ChatSession) {
+  showModal({
+    title: `${Locale.Memory.Title} (${session.lastSummarizeIndex} of ${session.messages.length})`,
+    children: (
+      <div className="markdown-body">
+        <pre className={styles["export-content"]}>
+          {session.memoryPrompt || Locale.Memory.EmptyContent}
+        </pre>
+      </div>
+    ),
+    actions: [
+      <IconButton
+        key="copy"
+        icon={<CopyIcon />}
+        bordered
+        text={Locale.Memory.Copy}
+        onClick={() => copyToClipboard(session.memoryPrompt)}
+      />,
+    ],
+  });
+}
 
 export function Avatar(props: { role: Message["role"] }) {
   const config = useChatStore((state) => state.config);
@@ -120,33 +216,11 @@ export function ChatList() {
   );
 }
 
-function useSubmitHandler() {
-  const config = useChatStore((state) => state.config);
-  const submitKey = config.submitKey;
-
-  const shouldSubmit = (e: KeyboardEvent) => {
-    if (e.key !== "Enter") return false;
-
-    return (
-      (config.submitKey === SubmitKey.AltEnter && e.altKey) ||
-      (config.submitKey === SubmitKey.CtrlEnter && e.ctrlKey) ||
-      (config.submitKey === SubmitKey.ShiftEnter && e.shiftKey) ||
-      (config.submitKey === SubmitKey.Enter &&
-        !e.altKey &&
-        !e.ctrlKey &&
-        !e.shiftKey)
-    );
-  };
-
-  return {
-    submitKey,
-    shouldSubmit,
-  };
-}
-
 export function Chat(props: { showSideBar?: () => void }) {
   type RenderMessage = Message & { preview?: boolean };
 
+  let autoScrolling = true;
+  const eventTypes = ["wheel", "touchmove", "keydown"];
   const session = useChatStore((state) => state.currentSession());
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -154,7 +228,10 @@ export function Chat(props: { showSideBar?: () => void }) {
 
   const onUserInput = useChatStore((state) => state.onUserInput);
   const onUserSubmit = () => {
-    if (userInput.length <= 0) return;
+    if (isLoading || userInput.length <= 0) return;
+    
+    autoScrolling = true;
+    startAutoScroll()
     setIsLoading(true);
     onUserInput(userInput).then(() => setIsLoading(false));
     setUserInput("");
@@ -165,6 +242,36 @@ export function Chat(props: { showSideBar?: () => void }) {
       e.preventDefault();
     }
   };
+
+  const startAutoScroll = throttle(
+    () => {
+      if (autoScrolling) {
+        const dom = latestMessageRef.current;
+        if (dom && !isIOS() && !hoveringMessage) {
+          dom.scrollIntoView({
+            behavior: "smooth",
+            block: "end",
+          });
+        }
+      }
+    },
+    250,
+    { leading: true, trailing: false }
+  );
+  const stopAutoScroll = () => {
+    if (isLoading) {
+      autoScrolling = false;
+    }
+  };
+  const eventHandler = (e:any) => {
+    if (e.type === "keydown") {
+      if (e.key !== "ArrowUp" && e.key !== "ArrowDown") {
+        return;
+      }
+    }
+    stopAutoScroll();
+  };
+  
   const latestMessageRef = useRef<HTMLDivElement>(null);
 
   const [hoveringMessage, setHoveringMessage] = useState(false);
@@ -196,15 +303,10 @@ export function Chat(props: { showSideBar?: () => void }) {
     );
 
   useLayoutEffect(() => {
-    setTimeout(() => {
-      const dom = latestMessageRef.current;
-      if (dom && !isIOS() && !hoveringMessage) {
-        dom.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-        });
-      }
-    }, 500);
+    eventTypes.forEach((type) => {
+      window.addEventListener(type, eventHandler, { passive: false });
+    });
+    startAutoScroll()
   });
 
   return (
@@ -279,23 +381,22 @@ export function Chat(props: { showSideBar?: () => void }) {
                   </div>
                 )}
                 <div className={styles["chat-message-item"]}>
-                  {!isUser && (
-                    <div className={styles["chat-message-top-actions"]}>
-                      {message.streaming && (
-                        <div
-                          className={styles["chat-message-top-action"]}
-                          onClick={() => showToast(Locale.WIP)}>
-                          {Locale.Chat.Actions.Stop}
-                        </div>
-                      )}
-
+                  <div className={styles[isUser ? "chat-message-top-actions-user" : "chat-message-top-actions"]}>
+                    {!isUser && message.streaming && (
                       <div
                         className={styles["chat-message-top-action"]}
-                        onClick={() => copyToClipboard(message.content)}>
-                        {Locale.Chat.Actions.Copy}
+                        onClick={() => showToast(Locale.WIP)}>
+                        {Locale.Chat.Actions.Stop}
                       </div>
+                    )}
+
+                    <div
+                      className={styles["chat-message-top-action"]}
+                      onClick={() => copyToClipboard(message.content)}>
+                      {Locale.Chat.Actions.Copy}
                     </div>
-                  )}
+                  </div>
+
                   {(message.preview || message.content.length === 0) &&
                   !isUser ? (
                     <LoadingIcon />
@@ -347,78 +448,6 @@ export function Chat(props: { showSideBar?: () => void }) {
       </div>
     </div>
   );
-}
-
-function useSwitchTheme() {
-  const config = useChatStore((state) => state.config);
-
-  useEffect(() => {
-    document.body.classList.remove("light");
-    document.body.classList.remove("dark");
-    if (config.theme === "dark") {
-      document.body.classList.add("dark");
-    } else if (config.theme === "light") {
-      document.body.classList.add("light");
-    }
-  }, [config.theme]);
-}
-
-function exportMessages(messages: Message[], topic: string) {
-  const mdText =
-    `# ${topic}\n\n` +
-    messages
-      .map((m) => {
-        return m.role === "user" ? `## ${m.content}` : m.content.trim();
-      })
-      .join("\n\n");
-  const filename = `${topic}.md`;
-
-  showModal({
-    title: Locale.Export.Title,
-    children: (
-      <div className="markdown-body">
-        <pre className={styles["export-content"]}>{mdText}</pre>
-      </div>
-    ),
-    actions: [
-      <IconButton
-        key="copy"
-        icon={<CopyIcon />}
-        bordered
-        text={Locale.Export.Copy}
-        onClick={() => copyToClipboard(mdText)}
-      />,
-      <IconButton
-        key="download"
-        icon={<DownloadIcon />}
-        bordered
-        text={Locale.Export.Download}
-        onClick={() => downloadAs(mdText, filename)}
-      />,
-    ],
-  });
-}
-
-function showMemoryPrompt(session: ChatSession) {
-  showModal({
-    title: `${Locale.Memory.Title} (${session.lastSummarizeIndex} of ${session.messages.length})`,
-    children: (
-      <div className="markdown-body">
-        <pre className={styles["export-content"]}>
-          {session.memoryPrompt || Locale.Memory.EmptyContent}
-        </pre>
-      </div>
-    ),
-    actions: [
-      <IconButton
-        key="copy"
-        icon={<CopyIcon />}
-        bordered
-        text={Locale.Memory.Copy}
-        onClick={() => copyToClipboard(session.memoryPrompt)}
-      />,
-    ],
-  });
 }
 
 export function Home() {
