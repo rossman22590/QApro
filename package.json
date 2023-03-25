@@ -3,7 +3,6 @@
   "version": "1.0",
   "private": false,
   "scripts": {
-    "dev1": "cross-env next dev",
     "dev": "cross-env COMMIT_ID=$(git rev-parse --short HEAD) next dev",
     "build": "cross-env COMMIT_ID=$(git rev-parse --short HEAD) next build",
     "start": "cross-env COMMIT_ID=$(git rev-parse --short HEAD) next start",

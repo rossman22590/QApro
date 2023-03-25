@@ -11,6 +11,7 @@ import ChatGptIcon from "../icons/chatgpt.svg";
 import SendWhiteIcon from "../icons/send-white.svg";
 import BrainIcon from "../icons/brain.svg";
 import ExportIcon from "../icons/export.svg";
+import LogoIcon from "../icons/logo.svg";
 import BotIcon from "../icons/bot.svg";
 import AddIcon from "../icons/add.svg";
 import DeleteIcon from "../icons/delete.svg";
@@ -451,7 +452,7 @@ export function Home() {
         }>
         <div className={styles["sidebar-header"]}>
           <div className={styles["sidebar-title"]}>QAChat Pro</div>
-          <div className={styles["sidebar-sub-title"]}>你的免费 Ai 助手.</div>
+          <div className={styles["sidebar-sub-title"]}>你的智慧 Ai 助手.</div>
           <div className={styles["sidebar-logo"]}>
             <ChatGptIcon />
           </div>
