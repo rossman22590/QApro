@@ -1,16 +1,18 @@
 "use client";
 
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
-
+import throttle from "just-throttle";
 import { IconButton } from "./button";
 import styles from "./home.module.scss";
 
 import SettingsIcon from "../icons/settings.svg";
 import GithubIcon from "../icons/github.svg";
+import PayIcon from "../icons/pay.svg"
 import ChatGptIcon from "../icons/chatgpt.svg";
 import SendWhiteIcon from "../icons/send-white.svg";
 import BrainIcon from "../icons/brain.svg";
 import ExportIcon from "../icons/export.svg";
+import LogoIcon from "../icons/logo.svg";
 import BotIcon from "../icons/bot.svg";
 import AddIcon from "../icons/add.svg";
 import DeleteIcon from "../icons/delete.svg";
@@ -26,7 +28,7 @@ import { copyToClipboard, downloadAs, isIOS, selectOrCopy } from "../utils";
 import Locale from "../locales";
 
 import dynamic from "next/dynamic";
-import { REPO_URL } from "../constant";
+import { REPO_URL, PAY_URL } from "../constant";
 
 export function Loading(props: { noLogo?: boolean }) {
   return (
@@ -48,75 +50,6 @@ const Settings = dynamic(async () => (await import("./settings")).Settings, {
 const Emoji = dynamic(async () => (await import("emoji-picker-react")).Emoji, {
   loading: () => <LoadingIcon />,
 });
-
-export function Avatar(props: { role: Message["role"] }) {
-  const config = useChatStore((state) => state.config);
-
-  if (props.role === "assistant") {
-    return <BotIcon className={styles["user-avtar"]} />;
-  }
-
-  return (
-    <div className={styles["user-avtar"]}>
-      <Emoji unified={config.avatar} size={18} />
-    </div>
-  );
-}
-
-export function ChatItem(props: {
-  onClick?: () => void;
-  onDelete?: () => void;
-  title: string;
-  count: number;
-  time: string;
-  selected: boolean;
-}) {
-  return (
-    <div
-      className={`${styles["chat-item"]} ${
-        props.selected && styles["chat-item-selected"]
-      }`}
-      onClick={props.onClick}>
-      <div className={styles["chat-item-title"]}>{props.title}</div>
-      <div className={styles["chat-item-info"]}>
-        <div className={styles["chat-item-count"]}>
-          {Locale.ChatItem.ChatItemCount(props.count)}
-        </div>
-        <div className={styles["chat-item-date"]}>{props.time}</div>
-      </div>
-      <div className={styles["chat-item-delete"]} onClick={props.onDelete}>
-        <DeleteIcon />
-      </div>
-    </div>
-  );
-}
-
-export function ChatList() {
-  const [sessions, selectedIndex, selectSession, removeSession] = useChatStore(
-    (state) => [
-      state.sessions,
-      state.currentSessionIndex,
-      state.selectSession,
-      state.removeSession,
-    ]
-  );
-
-  return (
-    <div className={styles["chat-list"]}>
-      {sessions.map((item, i) => (
-        <ChatItem
-          title={item.topic}
-          time={item.lastUpdate}
-          count={item.messages.length}
-          key={i}
-          selected={i === selectedIndex}
-          onClick={() => selectSession(i)}
-          onDelete={() => removeSession(i)}
-        />
-      ))}
-    </div>
-  );
-}
 
 function useSubmitHandler() {
   const config = useChatStore((state) => state.config);
@@ -140,211 +73,6 @@ function useSubmitHandler() {
     submitKey,
     shouldSubmit,
   };
-}
-
-export function Chat(props: { showSideBar?: () => void }) {
-  type RenderMessage = Message & { preview?: boolean };
-
-  const session = useChatStore((state) => state.currentSession());
-  const [userInput, setUserInput] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const { submitKey, shouldSubmit } = useSubmitHandler();
-
-  const onUserInput = useChatStore((state) => state.onUserInput);
-  const onUserSubmit = () => {
-    if (userInput.length <= 0) return;
-    setIsLoading(true);
-    onUserInput(userInput).then(() => setIsLoading(false));
-    setUserInput("");
-  };
-  const onInputKeyDown = (e: KeyboardEvent) => {
-    if (shouldSubmit(e)) {
-      onUserSubmit();
-      e.preventDefault();
-    }
-  };
-  const latestMessageRef = useRef<HTMLDivElement>(null);
-
-  const [hoveringMessage, setHoveringMessage] = useState(false);
-
-  const messages = (session.messages as RenderMessage[])
-    .concat(
-      isLoading
-        ? [
-            {
-              role: "assistant",
-              content: "……",
-              date: new Date().toLocaleString(),
-              preview: true,
-            },
-          ]
-        : []
-    )
-    .concat(
-      userInput.length > 0
-        ? [
-            {
-              role: "user",
-              content: userInput,
-              date: new Date().toLocaleString(),
-              preview: true,
-            },
-          ]
-        : []
-    );
-
-  useLayoutEffect(() => {
-    setTimeout(() => {
-      const dom = latestMessageRef.current;
-      if (dom && !isIOS() && !hoveringMessage) {
-        dom.scrollIntoView({
-          behavior: "smooth",
-          block: "end",
-        });
-      }
-    }, 500);
-  });
-
-  return (
-    <div className={styles.chat} key={session.id}>
-      <div className={styles["window-header"]}>
-        <div
-          className={styles["window-header-title"]}
-          onClick={props?.showSideBar}>
-          <div className={styles["window-header-main-title"]}>
-            {session.topic}
-          </div>
-          <div className={styles["window-header-sub-title"]}>
-            {Locale.Chat.SubTitle(session.messages.length)}
-          </div>
-        </div>
-        <div className={styles["window-actions"]}>
-          <div className={styles["window-action-button"] + " " + styles.mobile}>
-            <IconButton
-              icon={<MenuIcon />}
-              bordered
-              title={Locale.Chat.Actions.ChatList}
-              onClick={props?.showSideBar}
-            />
-          </div>
-          <div className={styles["window-action-button"]}>
-            <IconButton
-              icon={<BrainIcon />}
-              bordered
-              title={Locale.Chat.Actions.CompressedHistory}
-              onClick={() => {
-                showMemoryPrompt(session);
-              }}
-            />
-          </div>
-          <div className={styles["window-action-button"]}>
-            <IconButton
-              icon={<ExportIcon />}
-              bordered
-              title={Locale.Chat.Actions.Export}
-              onClick={() => {
-                exportMessages(session.messages, session.topic);
-              }}
-            />
-          </div>
-        </div>
-      </div>
-
-      <div
-        className={styles["chat-body"]}
-        onMouseOver={() => {
-          setHoveringMessage(true);
-        }}
-        onMouseOut={() => {
-          setHoveringMessage(false);
-        }}>
-        {messages.map((message, i) => {
-          const isUser = message.role === "user";
-
-          return (
-            <div
-              key={i}
-              className={
-                isUser ? styles["chat-message-user"] : styles["chat-message"]
-              }>
-              <div className={styles["chat-message-container"]}>
-                <div className={styles["chat-message-avatar"]}>
-                  <Avatar role={message.role} />
-                </div>
-                {(message.preview || message.streaming) && (
-                  <div className={styles["chat-message-status"]}>
-                    {Locale.Chat.Typing}
-                  </div>
-                )}
-                <div className={styles["chat-message-item"]}>
-                  {!isUser && (
-                    <div className={styles["chat-message-top-actions"]}>
-                      {message.streaming && (
-                        <div
-                          className={styles["chat-message-top-action"]}
-                          onClick={() => showToast(Locale.WIP)}>
-                          {Locale.Chat.Actions.Stop}
-                        </div>
-                      )}
-
-                      <div
-                        className={styles["chat-message-top-action"]}
-                        onClick={() => copyToClipboard(message.content)}>
-                        {Locale.Chat.Actions.Copy}
-                      </div>
-                    </div>
-                  )}
-                  {(message.preview || message.content.length === 0) &&
-                  !isUser ? (
-                    <LoadingIcon />
-                  ) : (
-                    <div
-                      className="markdown-body"
-                      onContextMenu={(e) => {
-                        if (selectOrCopy(e.currentTarget, message.content)) {
-                          e.preventDefault();
-                        }
-                      }}>
-                      <Markdown content={message.content} />
-                    </div>
-                  )}
-                </div>
-                {!isUser && !message.preview && (
-                  <div className={styles["chat-message-actions"]}>
-                    <div className={styles["chat-message-action-date"]}>
-                      {message.date.toLocaleString()}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          );
-        })}
-        <div ref={latestMessageRef} style={{ opacity: 0, height: "2em" }}>
-          -
-        </div>
-      </div>
-
-      <div className={styles["chat-input-panel"]}>
-        <div className={styles["chat-input-panel-inner"]}>
-          <textarea
-            className={styles["chat-input"]}
-            placeholder={Locale.Chat.Input(submitKey)}
-            rows={3}
-            onInput={(e) => setUserInput(e.currentTarget.value)}
-            value={userInput}
-            onKeyDown={(e) => onInputKeyDown(e as any)}
-          />
-          <IconButton
-            icon={<SendWhiteIcon />}
-            text={Locale.Chat.Send}
-            className={styles["chat-input-send"] + " no-dark"}
-            onClick={onUserSubmit}
-          />
-        </div>
-      </div>
-    </div>
-  );
 }
 
 function useSwitchTheme() {
@@ -419,6 +147,309 @@ function showMemoryPrompt(session: ChatSession) {
   });
 }
 
+export function Avatar(props: { role: Message["role"] }) {
+  const config = useChatStore((state) => state.config);
+
+  if (props.role === "assistant") {
+    return <BotIcon className={styles["user-avtar"]} />;
+  }
+
+  return (
+    <div className={styles["user-avtar"]}>
+      <Emoji unified={config.avatar} size={18} />
+    </div>
+  );
+}
+
+export function ChatItem(props: {
+  onClick?: () => void;
+  onDelete?: () => void;
+  title: string;
+  count: number;
+  time: string;
+  selected: boolean;
+}) {
+  return (
+    <div
+      className={`${styles["chat-item"]} ${
+        props.selected && styles["chat-item-selected"]
+      }`}
+      onClick={props.onClick}>
+      <div className={styles["chat-item-title"]}>{props.title}</div>
+      <div className={styles["chat-item-info"]}>
+        <div className={styles["chat-item-count"]}>
+          {Locale.ChatItem.ChatItemCount(props.count)}
+        </div>
+        <div className={styles["chat-item-date"]}>{props.time}</div>
+      </div>
+      <div className={styles["chat-item-delete"]} onClick={props.onDelete}>
+        <DeleteIcon />
+      </div>
+    </div>
+  );
+}
+
+export function ChatList() {
+  const [sessions, selectedIndex, selectSession, removeSession] = useChatStore(
+    (state) => [
+      state.sessions,
+      state.currentSessionIndex,
+      state.selectSession,
+      state.removeSession,
+    ]
+  );
+
+  return (
+    <div className={styles["chat-list"]}>
+      {sessions.map((item, i) => (
+        <ChatItem
+          title={item.topic}
+          time={item.lastUpdate}
+          count={item.messages.length}
+          key={i}
+          selected={i === selectedIndex}
+          onClick={() => selectSession(i)}
+          onDelete={() => removeSession(i)}
+        />
+      ))}
+    </div>
+  );
+}
+
+export function Chat(props: { showSideBar?: () => void }) {
+  type RenderMessage = Message & { preview?: boolean };
+
+  let autoScrolling = true;
+  const eventTypes = ["wheel", "touchmove", "keydown"];
+  const session = useChatStore((state) => state.currentSession());
+  const [userInput, setUserInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { submitKey, shouldSubmit } = useSubmitHandler();
+
+  const onUserInput = useChatStore((state) => state.onUserInput);
+  const onUserSubmit = () => {
+    if (isLoading || userInput.length <= 0) return;
+    
+    autoScrolling = true;
+    startAutoScroll()
+    setIsLoading(true);
+    onUserInput(userInput).then(() => setIsLoading(false));
+    setUserInput("");
+  };
+  const onInputKeyDown = (e: KeyboardEvent) => {
+    if (shouldSubmit(e)) {
+      onUserSubmit();
+      e.preventDefault();
+    }
+  };
+
+  const startAutoScroll = throttle(
+    () => {
+      if (autoScrolling) {
+        const dom = latestMessageRef.current;
+        if (dom && !isIOS() && !hoveringMessage) {
+          dom.scrollIntoView({
+            behavior: "smooth",
+            block: "end",
+          });
+        }
+      }
+    },
+    250,
+    { leading: true, trailing: false }
+  );
+  const stopAutoScroll = () => {
+    if (isLoading) {
+      autoScrolling = false;
+    }
+  };
+  const eventHandler = (e:any) => {
+    if (e.type === "keydown") {
+      if (e.key !== "ArrowUp" && e.key !== "ArrowDown") {
+        return;
+      }
+    }
+    stopAutoScroll();
+  };
+  
+  const latestMessageRef = useRef<HTMLDivElement>(null);
+
+  const [hoveringMessage, setHoveringMessage] = useState(false);
+
+  const messages = (session.messages as RenderMessage[])
+    .concat(
+      isLoading
+        ? [
+            {
+              role: "assistant",
+              content: "……",
+              date: new Date().toLocaleString(),
+              preview: true,
+            },
+          ]
+        : []
+    )
+    .concat(
+      userInput.length > 0
+        ? [
+            {
+              role: "user",
+              content: userInput,
+              date: new Date().toLocaleString(),
+              preview: true,
+            },
+          ]
+        : []
+    );
+
+  useLayoutEffect(() => {
+    eventTypes.forEach((type) => {
+      window.addEventListener(type, eventHandler, { passive: false });
+    });
+    startAutoScroll()
+  });
+
+  return (
+    <div className={styles.chat} key={session.id}>
+      <div className={styles["window-header"]}>
+        <div
+          className={styles["window-header-title"]}
+          onClick={props?.showSideBar}>
+          <div className={styles["window-header-main-title"]}>
+            {session.topic}
+          </div>
+          <div className={styles["window-header-sub-title"]}>
+            {Locale.Chat.SubTitle(session.messages.length)}
+          </div>
+        </div>
+        <div className={styles["window-actions"]}>
+          <div className={styles["window-action-button"] + " " + styles.mobile}>
+            <IconButton
+              icon={<MenuIcon />}
+              bordered
+              title={Locale.Chat.Actions.ChatList}
+              onClick={props?.showSideBar}
+            />
+          </div>
+          <div className={styles["window-action-button"]}>
+            <IconButton
+              icon={<BrainIcon />}
+              bordered
+              title={Locale.Chat.Actions.CompressedHistory}
+              onClick={() => {
+                showMemoryPrompt(session);
+              }}
+            />
+          </div>
+          <div className={styles["window-action-button"]}>
+            <IconButton
+              icon={<ExportIcon />}
+              bordered
+              title={Locale.Chat.Actions.Export}
+              onClick={() => {
+                exportMessages(session.messages, session.topic);
+              }}
+            />
+          </div>
+        </div>
+      </div>
+
+      <div
+        className={styles["chat-body"]}
+        onMouseOver={() => {
+          setHoveringMessage(true);
+        }}
+        onMouseOut={() => {
+          setHoveringMessage(false);
+        }}>
+        {messages.map((message, i) => {
+          const isUser = message.role === "user";
+
+          return (
+            <div
+              key={i}
+              className={
+                isUser ? styles["chat-message-user"] : styles["chat-message"]
+              }>
+              <div className={styles["chat-message-container"]}>
+                <div className={styles["chat-message-avatar"]}>
+                  <Avatar role={message.role} />
+                </div>
+                {(message.preview || message.streaming) && (
+                  <div className={styles["chat-message-status"]}>
+                    {Locale.Chat.Typing}
+                  </div>
+                )}
+                <div className={styles["chat-message-item"]}>
+                  <div className={styles[isUser ? "chat-message-top-actions-user" : "chat-message-top-actions"]}>
+                    {!isUser && message.streaming && (
+                      <div
+                        className={styles["chat-message-top-action"]}
+                        onClick={() => showToast(Locale.WIP)}>
+                        {Locale.Chat.Actions.Stop}
+                      </div>
+                    )}
+
+                    <div
+                      className={styles["chat-message-top-action"]}
+                      onClick={() => copyToClipboard(message.content)}>
+                      {Locale.Chat.Actions.Copy}
+                    </div>
+                  </div>
+
+                  {(message.preview || message.content.length === 0) &&
+                  !isUser ? (
+                    <LoadingIcon />
+                  ) : (
+                    <div
+                      className="markdown-body"
+                      onContextMenu={(e) => {
+                        if (selectOrCopy(e.currentTarget, message.content)) {
+                          e.preventDefault();
+                        }
+                      }}>
+                      <Markdown content={message.content} />
+                    </div>
+                  )}
+                </div>
+                {!isUser && !message.preview && (
+                  <div className={styles["chat-message-actions"]}>
+                    <div className={styles["chat-message-action-date"]}>
+                      {message.date.toLocaleString()}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
+        <div ref={latestMessageRef} style={{ opacity: 0, height: "2em" }}>
+          -
+        </div>
+      </div>
+
+      <div className={styles["chat-input-panel"]}>
+        <div className={styles["chat-input-panel-inner"]}>
+          <textarea
+            className={styles["chat-input"]}
+            placeholder={Locale.Chat.Input(submitKey)}
+            rows={3}
+            onInput={(e) => setUserInput(e.currentTarget.value)}
+            value={userInput}
+            onKeyDown={(e) => onInputKeyDown(e as any)}
+          />
+          <IconButton
+            icon={<SendWhiteIcon />}
+            text={Locale.Chat.Send}
+            className={styles["chat-input-send"] + " no-dark"}
+            onClick={onUserSubmit}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function Home() {
   const [createNewSession, currentIndex, removeSession] = useChatStore(
     (state) => [
@@ -443,7 +474,7 @@ export function Home() {
   return (
     <div
       className={`${
-        config.tightBorder ? styles["tight-container"] : styles.container
+        config.fullScreen ? styles["tight-container"] : styles.container
       }`}>
       <div
         className={
@@ -451,9 +482,9 @@ export function Home() {
         }>
         <div className={styles["sidebar-header"]}>
           <div className={styles["sidebar-title"]}>QAChat Pro</div>
-          <div className={styles["sidebar-sub-title"]}>你的免费 Ai 助手.</div>
+          <div className={styles["sidebar-sub-title"]}>你的智慧 Ai 助手.</div>
           <div className={styles["sidebar-logo"]}>
-            <ChatGptIcon />
+            <BotIcon />
           </div>
         </div>
 
@@ -490,6 +521,11 @@ export function Home() {
             <div className={styles["sidebar-action"]}>
               <a href={REPO_URL} target="_blank">
                 <IconButton icon={<GithubIcon />} />
+              </a>
+            </div>
+            <div className={styles["sidebar-action"]}>
+              <a href={PAY_URL} target="_blank">
+                <IconButton icon={<PayIcon /> }/>
               </a>
             </div>
           </div>

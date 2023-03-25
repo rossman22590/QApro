@@ -287,6 +287,32 @@
   position: relative;
 }
 
+.chat-message-top-actions-user {
+  font-size: 12px;
+  position: absolute;
+  left: 20px;
+  top: -26px;
+  transition: all ease 0.3s;
+  opacity: 0;
+  pointer-events: none;
+
+  display: flex;
+  flex-direction: row-reverse;
+
+  .chat-message-top-action {
+    opacity: 0.5;
+    color: var(--black);
+    cursor: pointer;
+
+    &:hover {
+      opacity: 1;
+    }
+
+    &:not(:first-child) {
+      margin-right: 10px;
+    }
+  }
+}
 .chat-message-top-actions {
   font-size: 12px;
   position: absolute;

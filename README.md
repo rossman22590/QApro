@@ -2,11 +2,10 @@
 
 与 AI 对话，[QAChat](https://github.com/gcloudlab/QA) 升级版~
 
-<!-- 在线体验：[https://qachat.cc](https://qachat.cc) (国内)；[https://qachats.vercel.app](https://qachats.vercel.app/) (国外) -->
 
 > tip：欢迎加入 <a href='https://t.me/yesmore_cc'><img src='https://img.shields.io/badge/-Juiçe的秘密基地-fff?logo=Telegram'/></a> 与喵娘聊天~（集成ChatGPT机器人）
 
-![预览](./static/cover.png)
+<!-- ![预览](./static/cover.png) -->
 
 </div>
 

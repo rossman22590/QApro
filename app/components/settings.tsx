@@ -218,13 +218,13 @@ export function Settings(props: { closeSettings: () => void }) {
           </SettingItem>
 
           <div className="no-mobile">
-            <SettingItem title={Locale.Settings.TightBorder}>
+            <SettingItem title={Locale.Settings.FullScreen}>
               <input
                 type="checkbox"
-                checked={config.tightBorder}
+                checked={config.fullScreen}
                 onChange={(e) =>
                   updateConfig(
-                    (config) => (config.tightBorder = e.currentTarget.checked)
+                    (config) => (config.fullScreen = e.currentTarget.checked)
                   )
                 }
               ></input>

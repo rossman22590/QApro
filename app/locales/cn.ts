@@ -27,7 +27,7 @@ const cn = {
     Copy: "全部复制",
   },
   Home: {
-    NewChat: "新的聊天",
+    NewChat: "新的对话",
     DeleteChat: "确认删除选中的对话？",
   },
   Settings: {
@@ -56,7 +56,7 @@ const cn = {
     },
     SendKey: "发送键",
     Theme: "主题",
-    TightBorder: "紧凑边框",
+    FullScreen: "全屏",
     HistoryCount: {
       Title: "附带历史消息数",
       SubTitle: "每次请求携带的历史消息数",
@@ -80,7 +80,7 @@ const cn = {
     },
   },
   Store: {
-    DefaultTopic: "新的聊天",
+    DefaultTopic: "新的对话",
     BotHello: "有什么可以帮你的吗",
     Error: "出错了，稍后重试吧",
     Prompt: {
