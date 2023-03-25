@@ -4,14 +4,17 @@ import { NextRequest } from "next/server";
 
 const apiKey = process.env.OPENAI_API_KEY;
 
-async function createStream(payload: string, customKey: string) {
+async function createStream(
+  payload: ReadableStream<Uint8Array>,
+  customKey: string
+) {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${customKey ? customKey : apiKey}`,
+      Authorization: `Bearer ${customKey !== "" ? customKey : apiKey}`,
     },
     method: "POST",
     body: payload,
@@ -49,9 +52,9 @@ async function createStream(payload: string, customKey: string) {
 
 export async function POST(req: NextRequest) {
   try {
-    const payload = await req.json();
-
-    const stream = await createStream(JSON.stringify(payload), payload.apiKey);
+    const _req = req.clone();
+    const { apiKey } = await _req.json();
+    const stream = await createStream(req.body!, apiKey);
     return new Response(stream);
   } catch (error) {
     console.error("[Chat Stream]", error);
