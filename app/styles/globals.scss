@@ -179,10 +179,11 @@ input[type="number"] {
   padding: 0 10px;
 }
 
-input[type="text"] {
+input[type="password"] {
   appearance: none;
   border-radius: 10px;
   border: var(--border-in-light);
+  width: 160px;
   height: 32px;
   box-sizing: border-box;
   background: var(--white);

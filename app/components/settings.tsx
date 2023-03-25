@@ -229,7 +229,7 @@ export function Settings(props: { closeSettings: () => void }) {
             title={Locale.Settings.ApiKey.Title}
             subTitle={Locale.Settings.ApiKey.SubTitle}>
             <input
-              type="text"
+              type="password"
               placeholder="🗝"
               value={config.modelConfig.apiKey}
               onChange={(e) =>

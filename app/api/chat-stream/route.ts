@@ -52,9 +52,9 @@ async function createStream(
 
 export async function POST(req: NextRequest) {
   try {
-    const _req = req.clone();
-    const { apiKey } = await _req.json();
-    const stream = await createStream(req.body!, apiKey);
+    // const _req = req.clone();
+    // const { apiKey } = await _req.json();
+    const stream = await createStream(req.body!, "");
     return new Response(stream);
   } catch (error) {
     console.error("[Chat Stream]", error);
