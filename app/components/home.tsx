@@ -22,12 +22,19 @@ import RefreshIcon from "../icons/refresh.svg";
 import DownloadIcon from "../icons/download.svg";
 
 import { Message, SubmitKey, useChatStore, ChatSession } from "../store";
-import { showModal, showToast } from "./ui-lib";
+import { showModal } from "./ui-lib";
 import { copyToClipboard, downloadAs, isIOS, selectOrCopy } from "../utils";
 import Locale from "../locales";
 
 import dynamic from "next/dynamic";
-import { REPO_URL, PAY_URL } from "../constant";
+import {
+  REPO_URL,
+  PAY_URL,
+  CONTACT_URL,
+  QACHAT_OLD_URL,
+  AD_URL,
+} from "../constant";
+import { ControllerPool } from "../requests";
 
 export type RenderMessage = Message & { preview?: boolean };
 
@@ -220,41 +227,55 @@ export function ChatList() {
 export function Chat(props: { showSideBar?: () => void }) {
   let autoScrolling = true;
   const eventTypes = ["wheel", "touchmove", "keydown"];
-  const session = useChatStore((state) => state.currentSession());
+  const [session, sessionIndex] = useChatStore((state) => [
+    state.currentSession(),
+    state.currentSessionIndex,
+  ]);
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { submitKey, shouldSubmit } = useSubmitHandler();
-  const [controller, setController] = useState<AbortController>();
 
   const onUserInput = useChatStore((state) => state.onUserInput);
-  const onReGenerage = useChatStore((state) => state.onReGenerage);
 
-  const onUserSubmit = (content: string) => {
-    if (content.length <= 0) return;
+  const onUserSubmit = () => {
+    if (userInput.length <= 0) return;
 
     autoScrolling = true;
     startAutoScroll();
     setIsLoading(true);
-
-    const _controller = new AbortController();
-    setController(_controller);
-    onUserInput(content, _controller).then(() => {
-      setIsLoading(false);
-    });
+    onUserInput(userInput).then(() => setIsLoading(false));
     setUserInput("");
   };
+  const onUserStop = (messageIndex: number) => {
+    // console.log(ControllerPool, sessionIndex, messageIndex);
+    ControllerPool.stop(sessionIndex, messageIndex);
+  };
+
   const onInputKeyDown = (e: KeyboardEvent) => {
     if (shouldSubmit(e)) {
-      onUserSubmit(userInput);
+      onUserSubmit();
       e.preventDefault();
     }
   };
-  const handleRegenerate = (message: Message, index: number) => {
+  const onRightClick = (e: any, message: Message) => {
+    // auto fill user input
     if (message.role === "user") {
-      onUserSubmit(message.content);
-    } else if (message.role === "assistant") {
-      if (index - 1 >= 0 && index - 1 < session.messages.length) {
-        console.log(session.messages[index - 1]);
+      setUserInput(message.content);
+    }
+
+    // copy to clipboard
+    if (selectOrCopy(e.currentTarget, message.content)) {
+      e.preventDefault();
+    }
+  };
+
+  const onResend = (botIndex: number) => {
+    // find last user input message and resend
+    for (let i = botIndex; i >= 0; i -= 1) {
+      if (messages[i].role === "user") {
+        setIsLoading(true);
+        onUserInput(messages[i].content).then(() => setIsLoading(false));
+        return;
       }
     }
   };
@@ -286,12 +307,6 @@ export function Chat(props: { showSideBar?: () => void }) {
       }
     }
     stopAutoScroll();
-  };
-
-  const handleStopStream = () => {
-    setIsLoading(false);
-    controller?.abort();
-    setController(undefined);
   };
 
   const latestMessageRef = useRef<HTMLDivElement>(null);
@@ -409,11 +424,19 @@ export function Chat(props: { showSideBar?: () => void }) {
                       onClick={() => copyToClipboard(message.content)}>
                       <CopyIcon />
                     </div>
-                    <div
-                      className={styles["chat-message-top-action"]}
-                      onClick={() => handleRegenerate(message, i)}>
-                      <RefreshIcon />
-                    </div>
+                    {message.streaming ? (
+                      <div
+                        className={styles["chat-message-top-action"]}
+                        onClick={() => onUserStop(i)}>
+                        <StopIcon style={{ fontSize: "12px" }} />
+                      </div>
+                    ) : (
+                      <div
+                        className={styles["chat-message-top-action"]}
+                        onClick={() => onResend(i)}>
+                        <RefreshIcon />
+                      </div>
+                    )}
                   </div>
 
                   {(message.preview || message.content.length === 0) &&
@@ -422,11 +445,7 @@ export function Chat(props: { showSideBar?: () => void }) {
                   ) : (
                     <div
                       className="markdown-body"
-                      onContextMenu={(e) => {
-                        if (selectOrCopy(e.currentTarget, message.content)) {
-                          e.preventDefault();
-                        }
-                      }}>
+                      onContextMenu={(e) => onRightClick(e, message)}>
                       <Markdown content={message.content} />
                     </div>
                   )}
@@ -461,13 +480,13 @@ export function Chat(props: { showSideBar?: () => void }) {
           <IconButton
             icon={<StopIcon />}
             className={styles["chat-input-stop"] + " no-dark"}
-            onClick={handleStopStream}
+            // onClick={handleStopStream}
           />
 
           <IconButton
             icon={<SendWhiteIcon />}
             className={styles["chat-input-send"] + " no-dark"}
-            onClick={() => onUserSubmit(userInput)}
+            onClick={onUserSubmit}
           />
         </div>
       </div>
@@ -563,16 +582,16 @@ export function Home() {
           </div>
         </div>
         <div className={styles["sidebar-links"]}>
-          <a href="https://shop.terobox.com/?from=1127" target="_blank">
+          <a href={AD_URL} target="_blank">
             购买ChatGPT密钥/账号
           </a>
           ·
-          <a href="https://qachat.cc" target="_blank">
+          <a href={QACHAT_OLD_URL} target="_blank">
             旧版
           </a>
           ·
-          <a href="" target="_blank">
-            合作
+          <a target="_blank" href={CONTACT_URL}>
+            联系
           </a>
         </div>
       </div>

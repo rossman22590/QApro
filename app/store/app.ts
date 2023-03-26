@@ -2,11 +2,14 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
 import { type ChatCompletionResponseMessage } from "openai";
-import { requestChatStream, requestWithPrompt } from "../requests";
+import {
+  ControllerPool,
+  requestChatStream,
+  requestWithPrompt,
+} from "../requests";
 import { trimTopic } from "../utils";
 
 import Locale from "../locales";
-import { RenderMessage } from "../components/home";
 
 export type Message = ChatCompletionResponseMessage & {
   date: string;
@@ -185,8 +188,7 @@ interface ChatStore {
   newSession: () => void;
   currentSession: () => ChatSession;
   onNewMessage: (message: Message) => void;
-  onUserInput: (content: string, controller: AbortController) => Promise<void>;
-  onReGenerage: (index: number, controller: AbortController) => Promise<void>;
+  onUserInput: (content: string) => Promise<void>;
   summarizeSession: () => void;
   updateStat: (message: Message) => void;
   updateCurrentSession: (updater: (session: ChatSession) => void) => void;
@@ -279,7 +281,7 @@ export const useChatStore = create<ChatStore>()(
         get().updateStat(message);
         get().summarizeSession();
       },
-      async onUserInput(content, controller) {
+      async onUserInput(content) {
         const userMessage: Message = {
           role: "user",
           content,
@@ -296,6 +298,8 @@ export const useChatStore = create<ChatStore>()(
         // get recent messages
         const recentMessages = get().getMessagesWithMemory();
         const sendMessages = recentMessages.concat(userMessage);
+        const sessionIndex = get().currentSessionIndex;
+        const messageIndex = get().currentSession().messages.length + 1;
 
         // save user's and bot's message
         get().updateCurrentSession((session) => {
@@ -304,53 +308,36 @@ export const useChatStore = create<ChatStore>()(
         });
 
         // console.log("[User Input] ", sendMessages);
-        requestChatStream(
-          sendMessages,
-          {
-            onMessage(content, done) {
-              if (done) {
-                botMessage.streaming = false;
-                botMessage.content = content;
-                get().onNewMessage(botMessage);
-              } else {
-                botMessage.content = content;
-                set(() => ({}));
-              }
-            },
-            onError(error) {
-              botMessage.content += "\n\n" + Locale.Store.Error;
+        requestChatStream(sendMessages, {
+          onMessage(content, done) {
+            if (done) {
               botMessage.streaming = false;
+              botMessage.content = content;
+              get().onNewMessage(botMessage);
+              ControllerPool.remove(sessionIndex, messageIndex);
+            } else {
+              botMessage.content = content;
               set(() => ({}));
-            },
-            filterBot: !get().config.sendBotMessages,
-            modelConfig: get().config.modelConfig,
-            apiKey: get().config.apiKey,
+            }
           },
-          controller
-        );
-      },
-      async onReGenerage(currentIndex, controller) {
-        // let message = get().currentSession().messages[currentIndex];
-        // let sendMessage: Message;
-        // if (message.role === "assistant") {
-        //   sendMessage = message;
-        // } else if (message.role === "user") {
-        // }
-        // console.log(get().currentSession().messages[currentIndex]);
-        // get().updateCurrentSession((session) => {
-        //   if (message.role === "assistant") {
-        //     if (currentIndex !== session.messages.length - 1) {
-        //       session.messages = session.messages.slice(0, currentIndex);
-        //     }
-        //   } else if (message.role === "user") {
-        //     if (currentIndex === session.messages.length - 1) {
-        //     } else {
-        //       session.messages = session.messages.slice(0, currentIndex);
-        //     }
-        //   }
-        //   // session.messages.push(userMessage);
-        // });
-        // get().onUserInput(message.content, controller);
+          onError(error) {
+            botMessage.content += "\n\n" + Locale.Store.Error;
+            botMessage.streaming = false;
+            set(() => ({}));
+            ControllerPool.remove(sessionIndex, messageIndex);
+          },
+          onController(controller) {
+            // collect controller for stop/retry
+            ControllerPool.addController(
+              sessionIndex,
+              messageIndex,
+              controller
+            );
+          },
+          filterBot: !get().config.sendBotMessages,
+          modelConfig: get().config.modelConfig,
+          apiKey: get().config.apiKey,
+        });
       },
       getMemoryPrompt() {
         const session = get().currentSession();

@@ -60,8 +60,8 @@ export async function requestChatStream(
     apiKey?: string;
     onMessage: (message: string, done: boolean) => void;
     onError: (error: Error) => void;
-  },
-  controller?: AbortController
+    onController?: (controller: AbortController) => void;
+  }
 ) {
   const req = makeRequestParam(messages, {
     stream: true,
@@ -73,11 +73,12 @@ export async function requestChatStream(
     Object.assign(req, filterConfig(options.modelConfig));
   }
 
-  const reqTimeoutId = setTimeout(() => {
-    controller?.abort();
-  }, TIME_OUT_MS);
+  const controller = new AbortController();
+  const reqTimeoutId = setTimeout(() => controller?.abort(), TIME_OUT_MS);
 
   try {
+    // add to controller pool
+    options?.onController?.(controller);
     const res = await fetch(`/api/chat-stream`, {
       method: "POST",
       headers: {
@@ -94,7 +95,7 @@ export async function requestChatStream(
 
     const finish = () => {
       options?.onMessage(responseText, true);
-      controller?.abort();
+      controller.abort();
     };
 
     if (res.ok) {
@@ -144,3 +145,36 @@ export async function requestWithPrompt(messages: Message[], prompt: string) {
 
   return res.choices.at(0)?.message?.content ?? "";
 }
+
+// To store message streaming controller
+export const ControllerPool = {
+  controllers: {} as Record<string, AbortController>,
+
+  addController(
+    sessionIndex: number,
+    messageIndex: number,
+    controller: AbortController
+  ) {
+    const key = this.key(sessionIndex, messageIndex);
+    this.controllers[key] = controller;
+    return key;
+  },
+
+  stop(sessionIndex: number, messageIndex: number) {
+    const key = this.key(sessionIndex, messageIndex);
+    console.log(sessionIndex, messageIndex, key, this.controllers);
+
+    const controller = this.controllers[key];
+    console.log(controller);
+    controller?.abort();
+  },
+
+  remove(sessionIndex: number, messageIndex: number) {
+    const key = this.key(sessionIndex, messageIndex);
+    delete this.controllers[key];
+  },
+
+  key(sessionIndex: number, messageIndex: number) {
+    return `${sessionIndex},${messageIndex}`;
+  },
+};

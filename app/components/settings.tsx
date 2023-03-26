@@ -211,8 +211,8 @@ export function Settings(props: { closeSettings: () => void }) {
               subTitle={Locale.Settings.AccessCode.SubTitle}>
               <input
                 value={accessStore.accessCode}
-                type="text"
-                placeholder={Locale.Settings.AccessCode.Placeholder}
+                type="password"
+                placeholder="🗝"
                 onChange={(e) => {
                   accessStore.updateCode(e.currentTarget.value);
                 }}></input>
