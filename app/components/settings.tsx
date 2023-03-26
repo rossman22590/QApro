@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useMemo } from "react";
 import EmojiPicker, { Theme as EmojiTheme } from "emoji-picker-react";
 import styles from "./settings.module.scss";
 import ResetIcon from "../icons/reload.svg";
@@ -6,7 +6,13 @@ import CloseIcon from "../icons/close.svg";
 import ClearIcon from "../icons/clear.svg";
 import { List, ListItem, Popover } from "./ui-lib";
 import { IconButton } from "./button";
-import { SubmitKey, useChatStore, Theme, ALL_MODELS } from "../store";
+import {
+  SubmitKey,
+  Theme,
+  ALL_MODELS,
+  useChatStore,
+  useAccessStore,
+} from "../store";
 import { Avatar } from "./home";
 import Locale, { changeLang, getLang } from "../locales";
 
@@ -37,6 +43,12 @@ export function Settings(props: { closeSettings: () => void }) {
       state.resetConfig,
       state.clearAllData,
     ]
+  );
+
+  const accessStore = useAccessStore();
+  const enabledAccessControl = useMemo(
+    () => accessStore.enabledAccessControl(),
+    []
   );
 
   return (
@@ -193,6 +205,21 @@ export function Settings(props: { closeSettings: () => void }) {
                 )
               }></input>
           </SettingItem>
+          {enabledAccessControl ? (
+            <SettingItem
+              title={Locale.Settings.AccessCode.Title}
+              subTitle={Locale.Settings.AccessCode.SubTitle}>
+              <input
+                value={accessStore.accessCode}
+                type="text"
+                placeholder={Locale.Settings.AccessCode.Placeholder}
+                onChange={(e) => {
+                  accessStore.updateCode(e.currentTarget.value);
+                }}></input>
+            </SettingItem>
+          ) : (
+            <></>
+          )}
           <SettingItem
             title={Locale.Settings.HistoryCount.Title}
             subTitle={Locale.Settings.HistoryCount.SubTitle}>

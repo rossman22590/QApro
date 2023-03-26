@@ -1,6 +1,18 @@
 import type { ChatRequest, ChatReponse } from "./api/chat/typing";
 import { TIME_OUT_MS } from "./constant";
-import { filterConfig, Message, ModelConfig } from "./store";
+import { filterConfig, Message, ModelConfig, useAccessStore } from "./store";
+import Locale from "./locales";
+
+function getHeaders() {
+  const accessStore = useAccessStore.getState();
+  let headers: Record<string, string> = {};
+
+  if (accessStore.enabledAccessControl()) {
+    headers["access-code"] = accessStore.accessCode;
+  }
+
+  return headers;
+}
 
 const makeRequestParam = (
   messages: Message[],
@@ -32,6 +44,7 @@ export async function requestChat(messages: Message[]) {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
+      ...getHeaders(),
     },
     body: JSON.stringify(req),
   });
@@ -70,6 +83,7 @@ export async function requestChatStream(
       headers: {
         "Content-Type": "application/json",
         Authorization: options?.apiKey || "",
+        ...getHeaders(),
       },
       body: JSON.stringify(req),
       signal: controller?.signal,
@@ -102,15 +116,18 @@ export async function requestChatStream(
           break;
         }
       }
-
+      finish();
+    } else if (res.status === 401) {
+      console.error("Anauthorized");
+      responseText = Locale.Error.Unauthorized;
       finish();
     } else {
       console.error("Stream Error");
       options?.onError(new Error("Stream Error"));
     }
   } catch (err) {
-    console.error("NetWork Error");
-    options?.onError(new Error("NetWork Error"));
+    console.error("NetWork Error", err);
+    options?.onError(err as Error);
   }
 }
 

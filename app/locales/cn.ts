@@ -2,6 +2,9 @@ import { PAY_URL } from "./../constant";
 
 const cn = {
   WIP: "该功能仍在开发中……",
+  Error: {
+    Unauthorized: "授权失败，请点击右下角打开设置页并填写授权码。",
+  },
   ChatItem: {
     ChatItemCount: (count: number) => `${count} 条对话`,
   },
@@ -67,6 +70,11 @@ const cn = {
     CompressThreshold: {
       Title: "历史消息长度压缩阈值",
       SubTitle: "当未压缩的历史消息超过该值时，将进行压缩",
+    },
+    AccessCode: {
+      Title: "访问授权码",
+      SubTitle: "现在是受控访问状态",
+      Placeholder: "请输入访问码授权码",
     },
     Model: "模型 (model)",
     Temperature: {

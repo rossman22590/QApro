@@ -3,6 +3,10 @@ import type { LocaleType } from "./index";
 
 const en: LocaleType = {
   WIP: "WIP...",
+  Error: {
+    Unauthorized:
+      "Unauthorized access, please enter access code in settings page.",
+  },
   ChatItem: {
     ChatItemCount: (count: number) => `${count} messages`,
   },
@@ -70,6 +74,11 @@ const en: LocaleType = {
       Title: "History Compression Threshold",
       SubTitle:
         "Will compress if uncompressed messages length exceeds the value",
+    },
+    AccessCode: {
+      Title: "Access Code",
+      SubTitle: "Access control enabled",
+      Placeholder: "Need Access Code",
     },
     Model: "Model",
     Temperature: {

@@ -310,6 +310,7 @@ export const useChatStore = create<ChatStore>()(
             onMessage(content, done) {
               if (done) {
                 botMessage.streaming = false;
+                botMessage.content = content;
                 get().onNewMessage(botMessage);
               } else {
                 botMessage.content = content;

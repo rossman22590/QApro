@@ -6,6 +6,7 @@ specifiers:
   '@types/react': ^18.0.28
   '@types/react-dom': ^18.0.11
   '@types/react-katex': ^3.0.0
+  '@types/spark-md5': ^3.0.2
   '@vercel/analytics': ^0.1.11
   cross-env: ^7.0.3
   emoji-picker-react: ^4.4.7
@@ -24,6 +25,7 @@ specifiers:
   remark-gfm: ^3.0.1
   remark-math: ^5.1.1
   sass: ^1.59.2
+  spark-md5: ^3.0.2
   typescript: 4.9.5
   undici: ^5.20.0
   zustand: ^4.3.6
@@ -34,6 +36,7 @@ dependencies:
   '@types/react': 18.0.29
   '@types/react-dom': 18.0.11
   '@types/react-katex': 3.0.0
+  '@types/spark-md5': 3.0.2
   '@vercel/analytics': 0.1.11_react@18.2.0
   cross-env: 7.0.3
   emoji-picker-react: 4.4.8_react@18.2.0
@@ -52,6 +55,7 @@ dependencies:
   remark-gfm: 3.0.1
   remark-math: 5.1.1
   sass: 1.60.0
+  spark-md5: 3.0.2
   typescript: 4.9.5
   undici: 5.21.0
   zustand: 4.3.6_react@18.2.0
@@ -1811,6 +1815,10 @@ packages:
 
   /@types/scheduler/0.16.3:
     resolution: {integrity: sha512-5cJ8CB4yAx7BH1oMvdU0Jh9lrEXyPkar6F9G/ERswkCuvP4KQZfZkSjcMbAICCpQTN4OuZn8tz0HiKv9TGZgrQ==}
+    dev: false
+
+  /@types/spark-md5/3.0.2:
+    resolution: {integrity: sha512-82E/lVRaqelV9qmRzzJ1PKTpyrpnT7mwdneKNJB9hUtypZDMggloDfFUCIqRRx3lYRxteCwXSq9c+W71Vf0QnQ==}
     dev: false
 
   /@types/unist/2.0.6:
@@ -4730,6 +4738,10 @@ packages:
 
   /space-separated-tokens/2.0.2:
     resolution: {integrity: sha512-PEGlAwrG8yXGXRjW32fGbg66JAlOAwbObuqVoJpv/mRgoWDQfgH1wDPvtzWyUSNAXBGSk8h755YDbbcEy3SH2Q==}
+    dev: false
+
+  /spark-md5/3.0.2:
+    resolution: {integrity: sha512-wcFzz9cDfbuqe0FZzfi2or1sgyIrsDwmPwfZC4hiNidPdPINjeUwNfv5kldczoEAcjl9Y1L3SM7Uz2PUEQzxQw==}
     dev: false
 
   /stable/0.1.8:
