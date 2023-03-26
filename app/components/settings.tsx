@@ -342,6 +342,11 @@ export function Settings(props: { closeSettings: () => void }) {
               }}></input>
           </SettingItem>
         </List>
+
+        <List>
+          <div>免责声明</div>
+          <div>隐私政策</div>
+        </List>
       </div>
     </>
   );
