@@ -91,7 +91,7 @@ const en: LocaleType = {
   },
   Store: {
     DefaultTopic: "New Conversation",
-    BotHello: `Meow, can I help you?`,
+    BotHello: `Meow, what can I help you?`,
     Error: "Something went wrong, please try again later.",
     Prompt: {
       History: (content: string) =>

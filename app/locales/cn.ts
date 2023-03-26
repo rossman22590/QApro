@@ -87,7 +87,7 @@ const cn = {
   },
   Store: {
     DefaultTopic: "新的对话",
-    BotHello: `Meow, what can I help you?`,
+    BotHello: `喵, 有什么可以帮你的吗？`,
     Error: "服务器开小差了，请稍后再试。",
     Prompt: {
       History: (content: string) =>
