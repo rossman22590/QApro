@@ -583,16 +583,13 @@ export function Home() {
         </div>
         <div className={styles["sidebar-links"]}>
           <a href={AD_URL} target="_blank">
-            购买ChatGPT密钥/账号
+            购买密钥/账号
           </a>
           ·
           <a href={QACHAT_OLD_URL} target="_blank">
             旧版
           </a>
-          ·
-          <a target="_blank" href={CONTACT_URL}>
-            联系
-          </a>
+          ·<a href="javascript:;;">Q群634323049</a>
         </div>
       </div>
 
