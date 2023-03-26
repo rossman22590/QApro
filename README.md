@@ -3,9 +3,9 @@
 与 AI 对话，[QAChat](https://github.com/gcloudlab/QA) 升级版~
 
 
-> tip：欢迎加入 <a href='https://t.me/yesmore_cc'><img src='https://img.shields.io/badge/-Juiçe的秘密基地-fff?logo=Telegram'/></a> 与喵娘聊天~（集成ChatGPT机器人）
 
-<!-- ![预览](./static/cover.png) -->
+
+![预览](./static/cover.png)
 
 </div>
 
@@ -21,6 +21,8 @@
 - 自动压缩上下文聊天记录，在节省 Token 的同时支持超长对话
 - 一键导出Markdown聊天记录
 - 双语切换（中英文）
+
+> tip：欢迎加入 <a href='https://t.me/yesmore_cc'><img src='https://img.shields.io/badge/-Juiçe的秘密基地-fff?logo=Telegram'/></a> 与喵娘聊天~（集成ChatGPT机器人）
 
 
 ## 环境变量
