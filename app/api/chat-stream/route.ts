@@ -49,7 +49,7 @@ async function createStream(payload: ChatRequest, customKey: string) {
 
 export async function POST(req: NextRequest) {
   try {
-    const reqJson = await req.json();
+    const reqJson = await req.clone().json();
     const apiKey = reqJson.apiKey;
     delete reqJson.apiKey; // see type 'ChatRequest'
 
