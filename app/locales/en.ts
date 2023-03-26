@@ -91,7 +91,7 @@ const en: LocaleType = {
   },
   Store: {
     DefaultTopic: "New Conversation",
-    BotHello: `喵, 有什么可以帮你的吗？\n\n提示：\n\n🍡输入内容按 Enter 发送(设置可修改); \n\n🍢单击右键复制内容 \n\n 🍬打开设置面板调节 GPT 参数  \n\n 🍭你的 [打赏](${PAY_URL}) 就是我的动力~`,
+    BotHello: `Meow, can I help you?`,
     Error: "Something went wrong, please try again later.",
     Prompt: {
       History: (content: string) =>
