@@ -169,7 +169,7 @@
   top: 10px;
   right: -20px;
   transition: all ease 0.3s;
-  opacity: 0;
+  opacity: 1;
 }
 
 .chat-item:hover > .chat-item-delete {
@@ -262,14 +262,6 @@
   flex-direction: column;
   align-items: flex-start;
   animation: slide-in ease 0.3s;
-
-  &:hover {
-    .chat-message-top-actions {
-      opacity: 1;
-      right: 10px;
-      pointer-events: all;
-    }
-  }
 }
 
 .chat-message-user > .chat-message-container {
@@ -315,14 +307,15 @@
 .chat-message-top-actions-user {
   font-size: 12px;
   position: absolute;
-  left: 20px;
-  top: -26px;
+  left: -25px;
+  top: 3px;
   transition: all ease 0.3s;
-  opacity: 0;
-  pointer-events: none;
+  opacity: 1;
+  z-index: 1;
+  transform: scale(0.8);
 
   display: flex;
-  flex-direction: row-reverse;
+  flex-direction: column;
 
   .chat-message-top-action {
     opacity: 0.5;
@@ -341,14 +334,15 @@
 .chat-message-top-actions {
   font-size: 12px;
   position: absolute;
-  right: 20px;
-  top: -26px;
+  right: -30px;
+  top: 5px;
   transition: all ease 0.3s;
-  opacity: 0;
-  pointer-events: none;
+  opacity: 1;
+  transform: scale(0.8);
+  z-index: 1;
 
   display: flex;
-  flex-direction: row-reverse;
+  flex-direction: column;
 
   .chat-message-top-action {
     opacity: 0.5;
@@ -420,6 +414,7 @@
   border: 1px solid var(--primary);
 }
 
+.chat-input-stop,
 .chat-input-send {
   background-color: var(--primary);
   color: white;
@@ -427,6 +422,9 @@
   position: absolute;
   right: 30px;
   bottom: 10px;
+}
+.chat-input-stop {
+  right: 80px;
 }
 
 .export-content {

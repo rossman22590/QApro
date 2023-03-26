@@ -7,12 +7,10 @@ import styles from "./home.module.scss";
 
 import SettingsIcon from "../icons/settings.svg";
 import GithubIcon from "../icons/github.svg";
-import PayIcon from "../icons/pay.svg";
-import ChatGptIcon from "../icons/chatgpt.svg";
+import StopIcon from "../icons/stop.svg";
 import SendWhiteIcon from "../icons/send-white.svg";
 import BrainIcon from "../icons/brain.svg";
 import ExportIcon from "../icons/export.svg";
-import LogoIcon from "../icons/logo.svg";
 import BotIcon from "../icons/bot.svg";
 import AddIcon from "../icons/add.svg";
 import DeleteIcon from "../icons/delete.svg";
@@ -20,6 +18,7 @@ import LoadingIcon from "../icons/three-dots.svg";
 import MenuIcon from "../icons/menu.svg";
 import CloseIcon from "../icons/close.svg";
 import CopyIcon from "../icons/copy.svg";
+import RefreshIcon from "../icons/refresh.svg";
 import DownloadIcon from "../icons/download.svg";
 
 import { Message, SubmitKey, useChatStore, ChatSession } from "../store";
@@ -225,16 +224,21 @@ export function Chat(props: { showSideBar?: () => void }) {
   const [userInput, setUserInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { submitKey, shouldSubmit } = useSubmitHandler();
+  const [controller, setController] = useState<AbortController>();
 
   const onUserInput = useChatStore((state) => state.onUserInput);
   const onUserSubmit = () => {
-    if (isLoading || userInput.length <= 0) return;
+    if (userInput.length <= 0) return;
 
     autoScrolling = true;
     startAutoScroll();
     setIsLoading(true);
 
-    onUserInput(userInput).then(() => setIsLoading(false));
+    const _controller = new AbortController();
+    setController(_controller);
+    onUserInput(userInput, _controller).then(() => {
+      setIsLoading(false);
+    });
     setUserInput("");
   };
   const onInputKeyDown = (e: KeyboardEvent) => {
@@ -271,6 +275,12 @@ export function Chat(props: { showSideBar?: () => void }) {
       }
     }
     stopAutoScroll();
+  };
+
+  const handleStopStream = () => {
+    setIsLoading(false);
+    controller?.abort();
+    setController(undefined);
   };
 
   const latestMessageRef = useRef<HTMLDivElement>(null);
@@ -383,18 +393,15 @@ export function Chat(props: { showSideBar?: () => void }) {
                           : "chat-message-top-actions"
                       ]
                     }>
-                    {!isUser && message.streaming && (
-                      <div
-                        className={styles["chat-message-top-action"]}
-                        onClick={() => showToast(Locale.WIP)}>
-                        {Locale.Chat.Actions.Stop}
-                      </div>
-                    )}
-
                     <div
                       className={styles["chat-message-top-action"]}
                       onClick={() => copyToClipboard(message.content)}>
-                      {Locale.Chat.Actions.Copy}
+                      <CopyIcon />
+                    </div>
+                    <div
+                      className={styles["chat-message-top-action"]}
+                      onClick={() => copyToClipboard(message.content)}>
+                      <RefreshIcon />
                     </div>
                   </div>
 
@@ -439,6 +446,13 @@ export function Chat(props: { showSideBar?: () => void }) {
             value={userInput}
             onKeyDown={(e) => onInputKeyDown(e as any)}
           />
+
+          <IconButton
+            icon={<StopIcon />}
+            className={styles["chat-input-stop"] + " no-dark"}
+            onClick={handleStopStream}
+          />
+
           <IconButton
             icon={<SendWhiteIcon />}
             className={styles["chat-input-send"] + " no-dark"}

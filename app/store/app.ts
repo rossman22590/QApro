@@ -182,7 +182,7 @@ interface ChatStore {
   newSession: () => void;
   currentSession: () => ChatSession;
   onNewMessage: (message: Message) => void;
-  onUserInput: (content: string) => Promise<void>;
+  onUserInput: (content: string, controller: AbortController) => Promise<void>;
   summarizeSession: () => void;
   updateStat: (message: Message) => void;
   updateCurrentSession: (updater: (session: ChatSession) => void) => void;
@@ -193,7 +193,6 @@ interface ChatStore {
   ) => void;
   getMessagesWithMemory: () => Message[];
   getMemoryPrompt: () => Message;
-
   getConfig: () => ChatConfig;
   resetConfig: () => void;
   updateConfig: (updater: (config: ChatConfig) => void) => void;
@@ -285,7 +284,7 @@ export const useChatStore = create<ChatStore>()(
         get().summarizeSession();
       },
 
-      async onUserInput(content) {
+      async onUserInput(content, controller) {
         const userMessage: Message = {
           role: "user",
           content,
@@ -310,26 +309,32 @@ export const useChatStore = create<ChatStore>()(
         });
 
         // console.log("[User Input] ", sendMessages);
-        requestChatStream(sendMessages, {
-          onMessage(content, done) {
-            if (done) {
+        requestChatStream(
+          sendMessages,
+          {
+            onMessage(content, done) {
+              if (done) {
+                botMessage.streaming = false;
+                get().onNewMessage(botMessage);
+              } else {
+                botMessage.content = content;
+                set(() => ({}));
+              }
+            },
+            onError(error) {
+              botMessage.content += "\n\n" + Locale.Store.Error;
               botMessage.streaming = false;
-              get().onNewMessage(botMessage);
-            } else {
-              botMessage.content = content;
               set(() => ({}));
-            }
+            },
+            filterBot: !get().config.sendBotMessages,
+            modelConfig: get().config.modelConfig,
+            apiKey: get().config.apiKey,
           },
-          onError(error) {
-            botMessage.content += "\n\n" + Locale.Store.Error;
-            botMessage.streaming = false;
-            set(() => ({}));
-          },
-          filterBot: !get().config.sendBotMessages,
-          modelConfig: get().config.modelConfig,
-          apiKey: get().config.apiKey,
-        });
+          controller
+        );
       },
+
+      onStopStream() {},
 
       getMemoryPrompt() {
         const session = get().currentSession();
@@ -423,7 +428,7 @@ export const useChatStore = create<ChatStore>()(
               onMessage(message, done) {
                 session.memoryPrompt = message;
                 if (done) {
-                  console.log("[Memory] ", session.memoryPrompt);
+                  // console.log("[Memory] ", session.memoryPrompt);
                   session.lastSummarizeIndex = lastSummarizeIndex;
                 }
               },

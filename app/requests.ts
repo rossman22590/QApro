@@ -1,7 +1,6 @@
 import type { ChatRequest, ChatReponse } from "./api/chat/typing";
+import { TIME_OUT_MS } from "./constant";
 import { filterConfig, Message, ModelConfig } from "./store";
-
-const TIME_OUT_MS = 30000;
 
 const makeRequestParam = (
   messages: Message[],
@@ -48,7 +47,8 @@ export async function requestChatStream(
     apiKey?: string;
     onMessage: (message: string, done: boolean) => void;
     onError: (error: Error) => void;
-  }
+  },
+  controller?: AbortController
 ) {
   const req = makeRequestParam(messages, {
     stream: true,
@@ -59,13 +59,10 @@ export async function requestChatStream(
   if (options?.modelConfig) {
     Object.assign(req, filterConfig(options.modelConfig));
   }
-  if (options?.apiKey) {
-    // Object.assign(req, {apiKey: options.apiKey})
-  }
-  // console.log("[Request] ", req);
 
-  const controller = new AbortController();
-  const reqTimeoutId = setTimeout(() => controller.abort(), TIME_OUT_MS);
+  const reqTimeoutId = setTimeout(() => {
+    controller?.abort();
+  }, TIME_OUT_MS);
 
   try {
     const res = await fetch(`/api/chat-stream`, {
@@ -75,7 +72,7 @@ export async function requestChatStream(
         Authorization: options?.apiKey || "",
       },
       body: JSON.stringify(req),
-      signal: controller.signal,
+      signal: controller?.signal,
     });
     clearTimeout(reqTimeoutId);
 
@@ -83,7 +80,7 @@ export async function requestChatStream(
 
     const finish = () => {
       options?.onMessage(responseText, true);
-      controller.abort();
+      controller?.abort();
     };
 
     if (res.ok) {
