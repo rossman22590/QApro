@@ -478,12 +478,6 @@ export function Chat(props: { showSideBar?: () => void }) {
           />
 
           <IconButton
-            icon={<StopIcon />}
-            className={styles["chat-input-stop"] + " no-dark"}
-            // onClick={handleStopStream}
-          />
-
-          <IconButton
             icon={<SendWhiteIcon />}
             className={styles["chat-input-send"] + " no-dark"}
             onClick={onUserSubmit}
