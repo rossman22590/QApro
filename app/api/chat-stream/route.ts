@@ -39,7 +39,7 @@ async function createStream(payload: ChatRequest, customKey: string) {
       }
 
       const parser = createParser(onParse);
-      for await (const chunk of res.body as any) {
+      for await (const chunk of (await res.clone().body) as any) {
         parser.feed(decoder.decode(chunk));
       }
     },
