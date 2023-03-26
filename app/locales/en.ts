@@ -61,6 +61,7 @@ const en: LocaleType = {
     SendKey: "Send Key",
     Theme: "Theme",
     FullScreen: "Full Screen",
+    previewInput: "Preview your input content",
     HistoryCount: {
       Title: "Attached Messages Count",
       SubTitle: "Number of sent messages attached per request",

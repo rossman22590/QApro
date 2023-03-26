@@ -36,6 +36,7 @@ export interface ChatConfig {
   theme: Theme;
   fullScreen: boolean;
   apiKey: string;
+  previewInput: boolean;
 
   modelConfig: {
     model: string;
@@ -123,6 +124,7 @@ const DEFAULT_CONFIG: ChatConfig = {
   theme: Theme.Auto as Theme,
   fullScreen: true,
   apiKey: "",
+  previewInput: false,
 
   modelConfig: {
     model: "gpt-3.5-turbo",

@@ -59,6 +59,7 @@ const cn = {
     SendKey: "发送键",
     Theme: "主题",
     FullScreen: "全屏",
+    previewInput: "输入消息预览",
     HistoryCount: {
       Title: "附带历史消息数",
       SubTitle: "每次请求携带的历史消息数",
