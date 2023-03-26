@@ -289,7 +289,7 @@ export function Settings(props: { closeSettings: () => void }) {
         <List>
           <div style={{ padding: "10px 20px" }}>
             <h4>免责声明</h4>
-            <p>
+            <p style={{ fontSize: "14px" }}>
               1.本网站是使用 OpenAI API的 ChatGPT
               镜像网站，仅供娱乐和学习目的，不得用于任何商业用途。
               <br />

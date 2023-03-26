@@ -555,7 +555,14 @@ export function Home() {
           <a href="https://shop.terobox.com/?from=1127" target="_blank">
             购买ChatGPT密钥/账号
           </a>
-          ·<a href="">推广</a>·<a href="">合作</a>
+          ·
+          <a href="https://qachat.cc" target="_blank">
+            旧版
+          </a>
+          ·
+          <a href="" target="_blank">
+            合作
+          </a>
         </div>
       </div>
 
