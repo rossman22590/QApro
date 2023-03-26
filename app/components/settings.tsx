@@ -288,7 +288,7 @@ export function Settings(props: { closeSettings: () => void }) {
         </List>
 
         <List>
-          <div>免责声明</div>
+          <p>免责声明</p>
           <div>隐私政策</div>
         </List>
       </div>
