@@ -175,11 +175,10 @@ export function Settings(props: { closeSettings: () => void }) {
             <input
               type="password"
               placeholder="🗝"
-              value={config.modelConfig.apiKey}
+              value={config.apiKey}
               onChange={(e) =>
                 updateConfig(
-                  (config) =>
-                    (config.modelConfig.apiKey = e.currentTarget.value)
+                  (config) => (config.apiKey = e.currentTarget.value)
                 )
               }></input>
           </SettingItem>
@@ -288,7 +287,7 @@ export function Settings(props: { closeSettings: () => void }) {
         </List>
 
         <List>
-          <p>免责声明</p>
+          <div>免责声明</div>
           <div>隐私政策</div>
         </List>
       </div>

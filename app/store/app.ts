@@ -34,9 +34,9 @@ export interface ChatConfig {
   avatar: string;
   theme: Theme;
   fullScreen: boolean;
+  apiKey: string;
 
   modelConfig: {
-    apiKey: string;
     model: string;
     temperature: number;
     max_tokens: number;
@@ -89,9 +89,6 @@ export function filterConfig(config: ModelConfig): Partial<ModelConfig> {
   const validator: {
     [k in keyof ModelConfig]: (x: ModelConfig[keyof ModelConfig]) => boolean;
   } = {
-    apiKey(x) {
-      return isValidString(x as string);
-    },
     model(x) {
       return isValidModel(x as string);
     },
@@ -124,9 +121,9 @@ const DEFAULT_CONFIG: ChatConfig = {
   avatar: "1f914",
   theme: Theme.Auto as Theme,
   fullScreen: true,
+  apiKey: "",
 
   modelConfig: {
-    apiKey: "",
     model: "gpt-3.5-turbo",
     temperature: 1,
     max_tokens: 2000,
@@ -330,6 +327,7 @@ export const useChatStore = create<ChatStore>()(
           },
           filterBot: !get().config.sendBotMessages,
           modelConfig: get().config.modelConfig,
+          apiKey: get().config.apiKey,
         });
       },
 

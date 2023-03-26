@@ -45,6 +45,7 @@ export async function requestChatStream(
   options?: {
     filterBot?: boolean;
     modelConfig?: ModelConfig;
+    apiKey?: string;
     onMessage: (message: string, done: boolean) => void;
     onError: (error: Error) => void;
   }
@@ -58,17 +59,20 @@ export async function requestChatStream(
   if (options?.modelConfig) {
     Object.assign(req, filterConfig(options.modelConfig));
   }
-
+  if (options?.apiKey) {
+    // Object.assign(req, {apiKey: options.apiKey})
+  }
   // console.log("[Request] ", req);
 
   const controller = new AbortController();
   const reqTimeoutId = setTimeout(() => controller.abort(), TIME_OUT_MS);
 
   try {
-    const res = await fetch("/api/chat-stream", {
+    const res = await fetch(`/api/chat-stream`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        Authorization: options?.apiKey || "",
       },
       body: JSON.stringify(req),
       signal: controller.signal,
