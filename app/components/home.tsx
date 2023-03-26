@@ -29,6 +29,8 @@ import Locale from "../locales";
 import dynamic from "next/dynamic";
 import { REPO_URL, PAY_URL } from "../constant";
 
+export type RenderMessage = Message & { preview?: boolean };
+
 export function Loading(props: { noLogo?: boolean }) {
   return (
     <div className={styles["loading-content"]}>
@@ -216,8 +218,6 @@ export function ChatList() {
 }
 
 export function Chat(props: { showSideBar?: () => void }) {
-  type RenderMessage = Message & { preview?: boolean };
-
   let autoScrolling = true;
   const eventTypes = ["wheel", "touchmove", "keydown"];
   const session = useChatStore((state) => state.currentSession());
@@ -227,8 +227,10 @@ export function Chat(props: { showSideBar?: () => void }) {
   const [controller, setController] = useState<AbortController>();
 
   const onUserInput = useChatStore((state) => state.onUserInput);
-  const onUserSubmit = () => {
-    if (userInput.length <= 0) return;
+  const onReGenerage = useChatStore((state) => state.onReGenerage);
+
+  const onUserSubmit = (content: string) => {
+    if (content.length <= 0) return;
 
     autoScrolling = true;
     startAutoScroll();
@@ -236,15 +238,24 @@ export function Chat(props: { showSideBar?: () => void }) {
 
     const _controller = new AbortController();
     setController(_controller);
-    onUserInput(userInput, _controller).then(() => {
+    onUserInput(content, _controller).then(() => {
       setIsLoading(false);
     });
     setUserInput("");
   };
   const onInputKeyDown = (e: KeyboardEvent) => {
     if (shouldSubmit(e)) {
-      onUserSubmit();
+      onUserSubmit(userInput);
       e.preventDefault();
+    }
+  };
+  const handleRegenerate = (message: Message, index: number) => {
+    if (message.role === "user") {
+      onUserSubmit(message.content);
+    } else if (message.role === "assistant") {
+      if (index - 1 >= 0 && index - 1 < session.messages.length) {
+        console.log(session.messages[index - 1]);
+      }
     }
   };
 
@@ -400,7 +411,7 @@ export function Chat(props: { showSideBar?: () => void }) {
                     </div>
                     <div
                       className={styles["chat-message-top-action"]}
-                      onClick={() => copyToClipboard(message.content)}>
+                      onClick={() => handleRegenerate(message, i)}>
                       <RefreshIcon />
                     </div>
                   </div>
@@ -456,7 +467,7 @@ export function Chat(props: { showSideBar?: () => void }) {
           <IconButton
             icon={<SendWhiteIcon />}
             className={styles["chat-input-send"] + " no-dark"}
-            onClick={onUserSubmit}
+            onClick={() => onUserSubmit(userInput)}
           />
         </div>
       </div>

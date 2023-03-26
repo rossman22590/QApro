@@ -6,6 +6,7 @@ import { requestChatStream, requestWithPrompt } from "../requests";
 import { trimTopic } from "../utils";
 
 import Locale from "../locales";
+import { RenderMessage } from "../components/home";
 
 export type Message = ChatCompletionResponseMessage & {
   date: string;
@@ -183,6 +184,7 @@ interface ChatStore {
   currentSession: () => ChatSession;
   onNewMessage: (message: Message) => void;
   onUserInput: (content: string, controller: AbortController) => Promise<void>;
+  onReGenerage: (index: number, controller: AbortController) => Promise<void>;
   summarizeSession: () => void;
   updateStat: (message: Message) => void;
   updateCurrentSession: (updater: (session: ChatSession) => void) => void;
@@ -209,27 +211,22 @@ export const useChatStore = create<ChatStore>()(
       config: {
         ...DEFAULT_CONFIG,
       },
-
       resetConfig() {
         set(() => ({ config: { ...DEFAULT_CONFIG } }));
       },
-
       getConfig() {
         return get().config;
       },
-
       updateConfig(updater) {
         const config = get().config;
         updater(config);
         set(() => ({ config }));
       },
-
       selectSession(index: number) {
         set({
           currentSessionIndex: index,
         });
       },
-
       removeSession(index: number) {
         set((state) => {
           let nextIndex = state.currentSessionIndex;
@@ -254,14 +251,12 @@ export const useChatStore = create<ChatStore>()(
           };
         });
       },
-
       newSession() {
         set((state) => ({
           currentSessionIndex: 0,
           sessions: [createEmptySession()].concat(state.sessions),
         }));
       },
-
       currentSession() {
         let index = get().currentSessionIndex;
         const sessions = get().sessions;
@@ -275,7 +270,6 @@ export const useChatStore = create<ChatStore>()(
 
         return session;
       },
-
       onNewMessage(message) {
         get().updateCurrentSession((session) => {
           session.lastUpdate = new Date().toLocaleString();
@@ -283,7 +277,6 @@ export const useChatStore = create<ChatStore>()(
         get().updateStat(message);
         get().summarizeSession();
       },
-
       async onUserInput(content, controller) {
         const userMessage: Message = {
           role: "user",
@@ -333,9 +326,29 @@ export const useChatStore = create<ChatStore>()(
           controller
         );
       },
-
-      onStopStream() {},
-
+      async onReGenerage(currentIndex, controller) {
+        // let message = get().currentSession().messages[currentIndex];
+        // let sendMessage: Message;
+        // if (message.role === "assistant") {
+        //   sendMessage = message;
+        // } else if (message.role === "user") {
+        // }
+        // console.log(get().currentSession().messages[currentIndex]);
+        // get().updateCurrentSession((session) => {
+        //   if (message.role === "assistant") {
+        //     if (currentIndex !== session.messages.length - 1) {
+        //       session.messages = session.messages.slice(0, currentIndex);
+        //     }
+        //   } else if (message.role === "user") {
+        //     if (currentIndex === session.messages.length - 1) {
+        //     } else {
+        //       session.messages = session.messages.slice(0, currentIndex);
+        //     }
+        //   }
+        //   // session.messages.push(userMessage);
+        // });
+        // get().onUserInput(message.content, controller);
+      },
       getMemoryPrompt() {
         const session = get().currentSession();
 
@@ -345,7 +358,6 @@ export const useChatStore = create<ChatStore>()(
           date: "",
         } as Message;
       },
-
       getMessagesWithMemory() {
         const session = get().currentSession();
         const config = get().config;
@@ -362,7 +374,6 @@ export const useChatStore = create<ChatStore>()(
 
         return recentMessages;
       },
-
       updateMessage(
         sessionIndex: number,
         messageIndex: number,
@@ -374,7 +385,6 @@ export const useChatStore = create<ChatStore>()(
         updater(messages?.at(messageIndex));
         set(() => ({ sessions }));
       },
-
       summarizeSession() {
         const session = get().currentSession();
 
@@ -439,21 +449,18 @@ export const useChatStore = create<ChatStore>()(
           );
         }
       },
-
       updateStat(message) {
         get().updateCurrentSession((session) => {
           session.stat.charCount += message.content.length;
           // TODO: should update chat count and word count
         });
       },
-
       updateCurrentSession(updater) {
         const sessions = get().sessions;
         const index = get().currentSessionIndex;
         updater(sessions[index]);
         set(() => ({ sessions }));
       },
-
       clearAllData() {
         if (confirm(Locale.Store.ConfirmClearAll)) {
           localStorage.clear();
