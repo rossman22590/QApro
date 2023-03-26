@@ -441,7 +441,6 @@ export function Chat(props: { showSideBar?: () => void }) {
           />
           <IconButton
             icon={<SendWhiteIcon />}
-            text={Locale.Chat.Send}
             className={styles["chat-input-send"] + " no-dark"}
             onClick={onUserSubmit}
           />
@@ -535,11 +534,7 @@ export function Home() {
             </div>
           </div>
           <div>
-            <IconButton
-              icon={<AddIcon />}
-              text={Locale.Home.NewChat}
-              onClick={createNewSession}
-            />
+            <IconButton icon={<AddIcon />} onClick={createNewSession} />
           </div>
         </div>
         <div className={styles["sidebar-links"]}>
