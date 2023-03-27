@@ -2,9 +2,6 @@
 
 与 AI 对话，[QAChat](https://github.com/gcloudlab/QA) 升级版~
 
-
-
-
 ![预览](./static/cover.png)
 
 </div>

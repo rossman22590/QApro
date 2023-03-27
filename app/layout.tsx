@@ -6,6 +6,11 @@ import "./styles/prism.scss";
 export const metadata = {
   title: "QAChat Pro",
   description: "Your personal ChatGPT Chat Bot.",
+  appleWebApp: {
+    title: "QAChat Pro",
+    statusBarStyle: "black-translucent",
+  },
+  themeColor: "#fafafa",
 };
 
 const COMMIT_ID = process.env.COMMIT_ID;
