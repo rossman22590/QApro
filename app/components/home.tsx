@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
-import Recomment from "./recomment";
+import Recomment from "./Recomment";
 import { IconButton } from "./button";
 import styles from "./home.module.scss";
 
@@ -436,7 +436,10 @@ export function Chat(props: {
                     <div
                       className="markdown-body"
                       style={{ fontSize: `${fontSize}px` }}
-                      onContextMenu={(e) => onRightClick(e, message)}>
+                      onContextMenu={(e) => onRightClick(e, message)}
+                      onDoubleClickCapture={() =>
+                        setUserInput(message.content)
+                      }>
                       <Markdown content={message.content} />
                     </div>
                   )}
