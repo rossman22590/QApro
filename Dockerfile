@@ -6,10 +6,10 @@ RUN apk add --no-cache libc6-compat
 
 WORKDIR /app
 
-COPY package.json yarn.lock* package-lock.json* ./
+COPY package.json pnpm-lock.yaml ./
 
 RUN \
-  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+  if [ -f pnpm-lock.yaml  ]; then pnpm --frozen-lockfile; \
   elif [ -f package-lock.json ]; then npm ci; \
   else echo "Lockfile not found." && exit 1; \
   fi
@@ -26,7 +26,7 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-RUN yarn build
+RUN pnpm build
 
 FROM base AS runner
 WORKDIR /app

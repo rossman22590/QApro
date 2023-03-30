@@ -33,7 +33,7 @@
 | ---------------- | ------------------------------------ | ------------------------------ |
 | `BASE_URL`       | Custom base url for OpenAI API       | `https://api.openai.com`       |
 | `OPENAI_API_KEY` | Custom OpenAI API Key                | `sk-eawsgfwegwaqeqtq234516512` |
-| `CODE`           | Access code                          | `123456`                       |
+| `CODE`           | Access code                          | `code1,code2,code3`            |
 | `PROTOCOL`       | Override openai api request protocol | `https`                        |
 
 ## 本地调试
