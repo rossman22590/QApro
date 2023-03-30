@@ -85,7 +85,7 @@ export const usePromptStore = create<PromptStore>()(
       name: PROMPT_KEY,
       version: 1,
       onRehydrateStorage(state) {
-        const PROMPT_URL = "./prompts.json";
+        const PROMPT_URL = "./prompts-zh.json";
 
         type PromptList = Array<[string, string]>;
 
@@ -94,13 +94,17 @@ export const usePromptStore = create<PromptStore>()(
           .then((res) => {
             const builtinPrompts = [res.en, res.cn]
               .map((promptList: PromptList) => {
-                return promptList.map(
-                  ([title, content]) =>
-                    ({
-                      title,
-                      content,
-                    } as Prompt)
-                );
+                console.log(promptList);
+                if (promptList) {
+                  return promptList.map(
+                    ([title, content]) =>
+                      ({
+                        title,
+                        content,
+                      } as Prompt)
+                  );
+                }
+                return [];
               })
               .concat([...(state?.prompts?.values() ?? [])]);
 

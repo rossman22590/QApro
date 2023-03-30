@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
-import Recomment from "./Recomment";
+import Recomment from "./recomment";
 import { IconButton } from "./button";
 import styles from "./home.module.scss";
 

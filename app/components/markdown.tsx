@@ -4,6 +4,7 @@ import RemarkMath from "remark-math";
 import RehypeKatex from "rehype-katex";
 import RemarkGfm from "remark-gfm";
 import RehypePrsim from "rehype-prism-plus";
+import RemarkBreaks from "remark-breaks";
 import { useRef } from "react";
 import { copyToClipboard } from "../utils";
 
@@ -19,8 +20,7 @@ export function PreCode(props: { children: any }) {
             const code = ref.current.innerText;
             copyToClipboard(code);
           }
-        }}
-      ></span>
+        }}></span>
       {props.children}
     </pre>
   );
@@ -29,12 +29,11 @@ export function PreCode(props: { children: any }) {
 export function Markdown(props: { content: string }) {
   return (
     <ReactMarkdown
-      remarkPlugins={[RemarkMath, RemarkGfm]}
+      remarkPlugins={[RemarkMath, RemarkGfm, RemarkBreaks]}
       rehypePlugins={[RehypeKatex, [RehypePrsim, { ignoreMissing: true }]]}
       components={{
         pre: PreCode,
-      }}
-    >
+      }}>
       {props.content}
     </ReactMarkdown>
   );

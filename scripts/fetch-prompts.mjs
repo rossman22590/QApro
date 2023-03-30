@@ -5,7 +5,7 @@ const CN_URL =
   "https://raw.githubusercontent.com/PlexPt/awesome-chatgpt-prompts-zh/main/prompts-zh.json";
 const EN_URL =
   "https://raw.githubusercontent.com/f/awesome-chatgpt-prompts/main/prompts.csv";
-const FILE = "./public/prompts.json";
+const FILE = "./public/prompts-zh.json";
 
 async function fetchCN() {
   console.log("[Fetch] fetching cn prompts...");
