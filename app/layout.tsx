@@ -7,28 +7,25 @@ import { ACCESS_CODES, IS_IN_DOCKER } from "./api/access";
 
 let COMMIT_ID: string | undefined;
 try {
-  COMMIT_ID = process
-    .execSync("git rev-parse --short HEAD")
-    .toString()
-    .trim();
+  COMMIT_ID = process.execSync("git rev-parse --short HEAD").toString().trim();
 } catch (e) {
-  console.error("No git or not from git repo.")
+  console.error("No git or not from git repo.");
 }
 
 export const metadata = {
-  title: "ChatGPT Next Web",
+  title: "QAChat Pro",
   description: "Your personal ChatGPT Chat Bot.",
   appleWebApp: {
-    title: "ChatGPT Next Web",
+    title: "QAChat Pro",
     statusBarStyle: "black-translucent",
   },
-  themeColor: "#fafafa"
+  themeColor: "#fafafa",
 };
 
 function Meta() {
   const metas = {
     version: COMMIT_ID ?? "unknown",
-    access: (ACCESS_CODES.size > 0 || IS_IN_DOCKER) ? "enabled" : "disabled",
+    access: ACCESS_CODES.size > 0 || IS_IN_DOCKER ? "enabled" : "disabled",
   };
 
   return (
@@ -58,8 +55,7 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com"></link>
         <link
           href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;700;900&display=swap"
-          rel="stylesheet"
-        ></link>
+          rel="stylesheet"></link>
         <script src="/serviceWorkerRegister.js" defer></script>
       </head>
       <body>{children}</body>

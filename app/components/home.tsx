@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useLayoutEffect } from "react";
 import { useDebouncedCallback } from "use-debounce";
 
+import Recomment from "./Recomment";
 import { IconButton } from "./button";
 import styles from "./home.module.scss";
 
@@ -80,8 +81,7 @@ export function ChatItem(props: {
       className={`${styles["chat-item"]} ${
         props.selected && styles["chat-item-selected"]
       }`}
-      onClick={props.onClick}
-    >
+      onClick={props.onClick}>
       <div className={styles["chat-item-title"]}>{props.title}</div>
       <div className={styles["chat-item-info"]}>
         <div className={styles["chat-item-count"]}>
@@ -103,7 +103,7 @@ export function ChatList() {
       state.currentSessionIndex,
       state.selectSession,
       state.removeSession,
-    ],
+    ]
   );
 
   return (
@@ -161,8 +161,7 @@ export function PromptHints(props: {
         <div
           className={styles["prompt-hint"]}
           key={prompt.title + i.toString()}
-          onClick={() => props.onPromptSelect(prompt)}
-        >
+          onClick={() => props.onPromptSelect(prompt)}>
           <div className={styles["hint-title"]}>{prompt.title}</div>
           <div className={styles["hint-content"]}>{prompt.content}</div>
         </div>
@@ -197,7 +196,7 @@ export function Chat(props: {
       setPromptHints(promptStore.search(text));
     },
     100,
-    { leading: true, trailing: true },
+    { leading: true, trailing: true }
   );
 
   const onPromptSelect = (prompt: Prompt) => {
@@ -211,7 +210,7 @@ export function Chat(props: {
     if (!dom) return;
     const paddingBottomNum: number = parseInt(
       window.getComputedStyle(dom).paddingBottom,
-      10,
+      10
     );
     dom.scrollTop = dom.scrollHeight - dom.offsetHeight + paddingBottomNum;
   };
@@ -301,7 +300,7 @@ export function Chat(props: {
               preview: true,
             },
           ]
-        : [],
+        : []
     )
     .concat(
       userInput.length > 0
@@ -313,7 +312,7 @@ export function Chat(props: {
               preview: true,
             },
           ]
-        : [],
+        : []
     );
 
   // auto scroll
@@ -333,19 +332,17 @@ export function Chat(props: {
       <div className={styles["window-header"]}>
         <div
           className={styles["window-header-title"]}
-          onClick={props?.showSideBar}
-        >
+          onClick={props?.showSideBar}>
           <div
             className={`${styles["window-header-main-title"]} ${styles["chat-body-title"]}`}
             onClick={() => {
               const newTopic = prompt(Locale.Chat.Rename, session.topic);
               if (newTopic && newTopic !== session.topic) {
                 chatStore.updateCurrentSession(
-                  (session) => (session.topic = newTopic!),
+                  (session) => (session.topic = newTopic!)
                 );
               }
-            }}
-          >
+            }}>
             {session.topic}
           </div>
           <div className={styles["window-header-sub-title"]}>
@@ -393,8 +390,7 @@ export function Chat(props: {
               key={i}
               className={
                 isUser ? styles["chat-message-user"] : styles["chat-message"]
-              }
-            >
+              }>
               <div className={styles["chat-message-container"]}>
                 <div className={styles["chat-message-avatar"]}>
                   <Avatar role={message.role} />
@@ -412,26 +408,22 @@ export function Chat(props: {
                           ? "chat-message-top-actions-user"
                           : "chat-message-top-actions"
                       ]
-                    }
-                  >
+                    }>
                     <div
                       className={styles["chat-message-top-action"]}
-                      onClick={() => copyToClipboard(message.content)}
-                    >
+                      onClick={() => copyToClipboard(message.content)}>
                       <CopyIcon />
                     </div>
                     {message.streaming ? (
                       <div
                         className={styles["chat-message-top-action"]}
-                        onClick={() => onUserStop(i)}
-                      >
+                        onClick={() => onUserStop(i)}>
                         <StopIcon style={{ fontSize: "12px" }} />
                       </div>
                     ) : (
                       <div
                         className={styles["chat-message-top-action"]}
-                        onClick={() => onResend(i)}
-                      >
+                        onClick={() => onResend(i)}>
                         <RefreshIcon />
                       </div>
                     )}
@@ -444,8 +436,7 @@ export function Chat(props: {
                     <div
                       className="markdown-body"
                       style={{ fontSize: `${fontSize}px` }}
-                      onContextMenu={(e) => onRightClick(e, message)}
-                    >
+                      onContextMenu={(e) => onRightClick(e, message)}>
                       <Markdown content={message.content} />
                     </div>
                   )}
@@ -590,7 +581,7 @@ export function Home() {
       state.newSession,
       state.currentSessionIndex,
       state.removeSession,
-    ],
+    ]
   );
   const loading = !useHasHydrated();
   const [showSideBar, setShowSideBar] = useState(true);
@@ -609,11 +600,11 @@ export function Home() {
     <div
       className={`${
         config.tightBorder ? styles["tight-container"] : styles.container
-      }`}
-    >
+      }`}>
       <div
-        className={styles.sidebar + ` ${showSideBar && styles["sidebar-show"]}`}
-      >
+        className={
+          styles.sidebar + ` ${showSideBar && styles["sidebar-show"]}`
+        }>
         <div className={styles["sidebar-header"]}>
           <div className={styles["sidebar-title"]}>
             QAChat <span className={styles["sidebar-title-pro"]}>𝐏𝐫𝐨</span>
@@ -628,11 +619,11 @@ export function Home() {
           onClick={() => {
             setOpenSettings(false);
             setShowSideBar(false);
-          }}
-        >
+          }}>
           <ChatList />
         </div>
 
+        <Recomment />
         <div className={styles["sidebar-tail"]}>
           <div className={styles["sidebar-actions"]}>
             <div className={styles["sidebar-action"] + " " + styles.mobile}>
@@ -663,8 +654,7 @@ export function Home() {
               <a
                 className={styles["sidebar-action-pay"]}
                 href={PAY_URL}
-                target="_blank"
-              >
+                target="_blank">
                 <IconButton icon={<span>赏</span>} />
               </a>
             </div>
