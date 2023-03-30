@@ -19,7 +19,8 @@ export function PreCode(props: { children: any }) {
             const code = ref.current.innerText;
             copyToClipboard(code);
           }
-        }}></span>
+        }}
+      ></span>
       {props.children}
     </pre>
   );
@@ -32,7 +33,8 @@ export function Markdown(props: { content: string }) {
       rehypePlugins={[RehypeKatex, [RehypePrsim, { ignoreMissing: true }]]}
       components={{
         pre: PreCode,
-      }}>
+      }}
+    >
       {props.content}
     </ReactMarkdown>
   );

@@ -11,10 +11,11 @@ const nextConfig = {
     }); // 针对 SVG 的处理规则
 
     return config;
-  },
-  env: {
-    OPENAI_API_KEY: process.env.OPENAI_API_KEY,
-  },
+  }
 };
+
+if (process.env.DOCKER) {
+  nextConfig.output = 'standalone'
+}
 
 module.exports = nextConfig;

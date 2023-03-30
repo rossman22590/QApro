@@ -15,8 +15,6 @@
 
   /* stroke */
   --border-in-light: 1px solid rgb(222, 222, 222);
-
-  --theme-color: var(--gray);
 }
 
 @mixin dark {
@@ -31,6 +29,8 @@
   --bar-color: rgba(255, 255, 255, 0.1);
 
   --border-in-light: 1px solid rgba(255, 255, 255, 0.192);
+
+  --theme-color: var(--gray);
 }
 
 .light {
@@ -76,7 +76,6 @@
 }
 
 body {
-  // background: linear-gradient(to bottom, #b8d8d2, #95bcb5, #7eb1ab);
   background-color: #f5e6d8;
   color: var(--black);
   margin: 0;
@@ -88,7 +87,11 @@ body {
   align-items: center;
   user-select: none;
   font-family: "Noto Sans SC", "SF Pro SC", "SF Pro Text", "SF Pro Icons",
-    "PingFang SC", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+  "PingFang SC", "Helvetica Neue", "Helvetica", "Arial", sans-serif;
+
+  @media only screen and (max-width: 600px) {
+    background-color: var(--second);
+  }
 }
 
 ::-webkit-scrollbar {
@@ -181,7 +184,7 @@ input[type="text"] {
   background: var(--white);
   color: var(--black);
   padding: 0 10px;
-  // max-width: 50%;
+  max-width: 50%;
 }
 
 input[type="password"] {
@@ -235,9 +238,8 @@ pre {
   .copy-code-button {
     position: absolute;
     right: 10px;
-    top: 10px;
     cursor: pointer;
-    padding: 2px 5px;
+    padding: 0px 5px;
     background-color: var(--black);
     color: var(--white);
     border: var(--border-in-light);
@@ -252,7 +254,7 @@ pre {
     }
 
     &:hover {
-      opacity: 0.9;
+      opacity: 1;
     }
   }
 }

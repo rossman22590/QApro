@@ -1,4 +1,4 @@
-import { PAY_URL } from "../constant";
+import { SubmitKey } from "../store/app";
 import type { LocaleType } from "./index";
 
 const en: LocaleType = {
@@ -20,9 +20,15 @@ const en: LocaleType = {
       Stop: "Stop",
       Retry: "Retry",
     },
+    Rename: "Rename Chat",
     Typing: "Typing…",
-    Input: (submitKey: string) =>
-      `Type something and press ${submitKey} to send`,
+    Input: (submitKey: string) => {
+      var inputHints = `Type something and press ${submitKey} to send`;
+      if (submitKey === String(SubmitKey.Enter)) {
+        inputHints += ", press Shift + Enter to newline";
+      }
+      return inputHints;
+    },
     Send: "Send",
   },
   Export: {
@@ -50,11 +56,16 @@ const en: LocaleType = {
     Lang: {
       Name: "语言",
       Options: {
-        cn: "中文",
+        cn: "简体中文",
         en: "English",
+        tw: "繁體中文",
       },
     },
     Avatar: "Avatar",
+    FontSize: {
+      Title: "Font Size",
+      SubTitle: "Adjust font size of chat content",
+    },
     Update: {
       Version: (x: string) => `Version: ${x}`,
       IsLatest: "Latest version",
@@ -65,8 +76,18 @@ const en: LocaleType = {
     },
     SendKey: "Send Key",
     Theme: "Theme",
-    FullScreen: "Full Screen",
-    previewInput: "Preview your input content",
+    TightBorder: "Full Screen",
+    previewInput: "Preview input",
+    Prompt: {
+      Disable: {
+        Title: "Disable auto-completion",
+        SubTitle: "Input / to trigger auto-completion",
+      },
+      List: "Prompt List",
+      ListCount: (builtin: number, custom: number) =>
+        `${builtin} built-in, ${custom} user-defined`,
+      Edit: "Edit",
+    },
     HistoryCount: {
       Title: "Attached Messages Count",
       SubTitle: "Number of sent messages attached per request",
@@ -75,6 +96,19 @@ const en: LocaleType = {
       Title: "History Compression Threshold",
       SubTitle:
         "Will compress if uncompressed messages length exceeds the value",
+    },
+    Token: {
+      Title: "API Key",
+      SubTitle: "Use your key to ignore access code limit",
+      Placeholder: "OpenAI API Key",
+    },
+    Usage: {
+      Title: "Account Balance",
+      SubTitle(granted: any, used: any) {
+        return `Total $${granted}, Used $${used}`;
+      },
+      IsChecking: "Checking...",
+      Check: "Check Again",
     },
     AccessCode: {
       Title: "Access Code",
@@ -85,10 +119,6 @@ const en: LocaleType = {
     Temperature: {
       Title: "Temperature",
       SubTitle: "A larger value makes the more random output",
-    },
-    ApiKey: {
-      Title: "OpenAI Api Key",
-      SubTitle: "OpenAI Api Key",
     },
     MaxTokens: {
       Title: "Max Tokens",
@@ -102,14 +132,14 @@ const en: LocaleType = {
   },
   Store: {
     DefaultTopic: "New Conversation",
-    BotHello: `Meow, what can I help you?`,
+    BotHello: "Hello! How can I assist you today?",
     Error: "Something went wrong, please try again later.",
     Prompt: {
       History: (content: string) =>
         "This is a summary of the chat history between the AI and the user as a recap: " +
         content,
       Topic:
-        "Provide a brief topic of the sentence without explanation. If there is no topic, return 'Chitchat'.",
+        "Please generate a four to five word title summarizing our conversation without any lead-in, punctuation, quotation marks, periods, symbols, or additional text. Remove enclosing quotation marks.",
       Summarize:
         "Summarize our discussion briefly in 50 characters or less to use as a prompt for future context.",
     },

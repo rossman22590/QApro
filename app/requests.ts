@@ -1,25 +1,15 @@
-import type { ChatRequest, ChatReponse } from "./api/chat/typing";
-import { TIME_OUT_MS } from "./constant";
+import type { ChatRequest, ChatReponse } from "./api/openai/typing";
 import { filterConfig, Message, ModelConfig, useAccessStore } from "./store";
 import Locale from "./locales";
 
-function getHeaders() {
-  const accessStore = useAccessStore.getState();
-  let headers: Record<string, string> = {};
-
-  if (accessStore.enabledAccessControl()) {
-    headers["access-code"] = accessStore.accessCode;
-  }
-
-  return headers;
-}
+const TIME_OUT_MS = 30000;
 
 const makeRequestParam = (
   messages: Message[],
   options?: {
     filterBot?: boolean;
     stream?: boolean;
-  }
+  },
 ): ChatRequest => {
   let sendMessages = messages.map((v) => ({
     role: v.role,
@@ -37,19 +27,63 @@ const makeRequestParam = (
   };
 };
 
+function getHeaders() {
+  const accessStore = useAccessStore.getState();
+  let headers: Record<string, string> = {};
+
+  if (accessStore.enabledAccessControl()) {
+    headers["access-code"] = accessStore.accessCode;
+  }
+
+  if (accessStore.token && accessStore.token.length > 0) {
+    headers["token"] = accessStore.token;
+  }
+
+  return headers;
+}
+
+export function requestOpenaiClient(path: string) {
+  return (body: any, method = "POST") =>
+    fetch("/api/openai", {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        path,
+        ...getHeaders(),
+      },
+      body: body && JSON.stringify(body),
+    });
+}
+
 export async function requestChat(messages: Message[]) {
   const req: ChatRequest = makeRequestParam(messages, { filterBot: true });
 
-  const res = await fetch("/api/chat", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...getHeaders(),
-    },
-    body: JSON.stringify(req),
-  });
+  const res = await requestOpenaiClient("v1/chat/completions")(req);
 
-  return (await res.json()) as ChatReponse;
+  try {
+    const response = (await res.json()) as ChatReponse;
+    return response;
+  } catch (error) {
+    console.error("[Request Chat] ", error, res.body);
+  }
+}
+
+export async function requestUsage() {
+  const res = await requestOpenaiClient("dashboard/billing/credit_grants")(
+    null,
+    "GET",
+  );
+
+  try {
+    const response = (await res.json()) as {
+      total_available: number;
+      total_granted: number;
+      total_used: number;
+    };
+    return response;
+  } catch (error) {
+    console.error("[Request usage] ", error, res.body);
+  }
 }
 
 export async function requestChatStream(
@@ -57,11 +91,10 @@ export async function requestChatStream(
   options?: {
     filterBot?: boolean;
     modelConfig?: ModelConfig;
-    apiKey?: string;
     onMessage: (message: string, done: boolean) => void;
     onError: (error: Error) => void;
     onController?: (controller: AbortController) => void;
-  }
+  },
 ) {
   const req = makeRequestParam(messages, {
     stream: true,
@@ -73,21 +106,21 @@ export async function requestChatStream(
     Object.assign(req, filterConfig(options.modelConfig));
   }
 
+  // console.log("[Request] ", req);
+
   const controller = new AbortController();
-  const reqTimeoutId = setTimeout(() => controller?.abort(), TIME_OUT_MS);
+  const reqTimeoutId = setTimeout(() => controller.abort(), TIME_OUT_MS);
 
   try {
-    // add to controller pool
-    options?.onController?.(controller);
-    const res = await fetch(`/api/chat-stream`, {
+    const res = await fetch("/api/chat-stream", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: options?.apiKey || "",
+        path: "v1/chat/completions",
         ...getHeaders(),
       },
       body: JSON.stringify(req),
-      signal: controller?.signal,
+      signal: controller.signal,
     });
     clearTimeout(reqTimeoutId);
 
@@ -101,6 +134,8 @@ export async function requestChatStream(
     if (res.ok) {
       const reader = res.body?.getReader();
       const decoder = new TextDecoder();
+
+      options?.onController?.(controller);
 
       while (true) {
         // handle time out, will stop if no response in 10 secs
@@ -117,13 +152,14 @@ export async function requestChatStream(
           break;
         }
       }
+
       finish();
     } else if (res.status === 401) {
       console.error("Anauthorized");
       responseText = Locale.Error.Unauthorized;
       finish();
     } else {
-      console.error("Stream Error");
+      console.error("Stream Error", res.body);
       options?.onError(new Error("Stream Error"));
     }
   } catch (err) {
@@ -143,7 +179,7 @@ export async function requestWithPrompt(messages: Message[], prompt: string) {
 
   const res = await requestChat(messages);
 
-  return res.choices.at(0)?.message?.content ?? "";
+  return res?.choices?.at(0)?.message?.content ?? "";
 }
 
 // To store message streaming controller
@@ -153,7 +189,7 @@ export const ControllerPool = {
   addController(
     sessionIndex: number,
     messageIndex: number,
-    controller: AbortController
+    controller: AbortController,
   ) {
     const key = this.key(sessionIndex, messageIndex);
     this.controllers[key] = controller;
@@ -162,8 +198,6 @@ export const ControllerPool = {
 
   stop(sessionIndex: number, messageIndex: number) {
     const key = this.key(sessionIndex, messageIndex);
-    console.log(sessionIndex, messageIndex, key, this.controllers);
-
     const controller = this.controllers[key];
     console.log(controller);
     controller?.abort();

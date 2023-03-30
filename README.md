@@ -29,10 +29,12 @@
 > 如果需要本地开发，请填写http代理 `HTTPS_PROXY` 变量。
 
 
-| 变量                  | 描述                           | 示例                           |
-| --------------------- | ------------------------------ | ------------------------------ |
-| `OPENAI_API_BASE_URL` | Custom base url for OpenAI API | `https://api.openai.com`       |
-| `OPENAI_API_KEY`      | Custom OpenAI API Key          | `sk-eawsgfwegwaqeqtq234516512` |
+| 变量             | 描述                                 | 示例                           |
+| ---------------- | ------------------------------------ | ------------------------------ |
+| `BASE_URL`       | Custom base url for OpenAI API       | `https://api.openai.com`       |
+| `OPENAI_API_KEY` | Custom OpenAI API Key                | `sk-eawsgfwegwaqeqtq234516512` |
+| `CODE`           | Access code                          | `123456`                       |
+| `PROTOCOL`       | Override openai api request protocol | `https`                        |
 
 ## 本地调试
 
@@ -50,16 +52,6 @@ pnpm dev
 #### Vercel (推荐)
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fyesmore%2FQApro&env=OPENAI_API_KEY&envDescription=OpenAI%20API%20Key&envLink=https%3A%2F%2Fplatform.openai.com%2Faccount%2Fapi-keys)
-
-#### Netlify
-
-[![Deploy with Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/yesmore/QApro#OPENAI_API_KEY=&HTTPS_PROXY=&OPENAI_API_BASE_URL=&HEAD_SCRIPTS=&SECRET_KEY=&OPENAI_API_MODEL=&SITE_PASSWORD=)
-
-**分步部署教程：**
-
-- [Fork](https://github.com/yesmore/QA/fork) 此项目，前往 [https://app.netlify.com/start](https://app.netlify.com/start) 新建站点，选择你 `fork` 完成的项目，将其与 `GitHub` 帐户连接。
-- 选择要部署的分支，选择 `main` 分支， 在项目设置中配置环境变量，环境变量配置参考下文。
-- 选择默认的构建命令和输出目录，单击 `Deploy Site` 按钮开始部署站点。
 
 
 ## LICENSE

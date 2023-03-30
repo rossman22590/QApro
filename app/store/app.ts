@@ -21,6 +21,7 @@ export enum SubmitKey {
   CtrlEnter = "Ctrl + Enter",
   ShiftEnter = "Shift + Enter",
   AltEnter = "Alt + Enter",
+  MetaEnter = "Meta + Enter",
 }
 
 export enum Theme {
@@ -30,16 +31,17 @@ export enum Theme {
 }
 
 export interface ChatConfig {
-  maxToken?: number;
   historyMessageCount: number; // -1 means all
   compressMessageLengthThreshold: number;
   sendBotMessages: boolean; // send bot's message or not
   submitKey: SubmitKey;
   avatar: string;
+  fontSize: number;
   theme: Theme;
-  fullScreen: boolean;
-  apiKey: string;
+  tightBorder: boolean;
   previewInput: boolean;
+
+  disablePromptHint: boolean;
 
   modelConfig: {
     model: string;
@@ -88,10 +90,6 @@ export function isValidNumber(x: number, min: number, max: number) {
   return typeof x === "number" && x <= max && x >= min;
 }
 
-export function isValidString(x: string) {
-  return typeof x === "string";
-}
-
 export function filterConfig(config: ModelConfig): Partial<ModelConfig> {
   const validator: {
     [k in keyof ModelConfig]: (x: ModelConfig[keyof ModelConfig]) => boolean;
@@ -126,10 +124,12 @@ const DEFAULT_CONFIG: ChatConfig = {
   sendBotMessages: true as boolean,
   submitKey: SubmitKey.Enter as SubmitKey,
   avatar: "1f914",
+  fontSize: 14,
   theme: Theme.Auto as Theme,
-  fullScreen: true,
-  apiKey: "",
+  tightBorder: false,
   previewInput: false,
+
+  disablePromptHint: false,
 
   modelConfig: {
     model: "gpt-3.5-turbo",
@@ -138,11 +138,13 @@ const DEFAULT_CONFIG: ChatConfig = {
     presence_penalty: 0,
   },
 };
+
 export interface ChatStat {
   tokenCount: number;
   wordCount: number;
   charCount: number;
 }
+
 export interface ChatSession {
   id: number;
   topic: string;
@@ -195,17 +197,22 @@ interface ChatStore {
   updateMessage: (
     sessionIndex: number,
     messageIndex: number,
-    updater: (message?: Message) => void
+    updater: (message?: Message) => void,
   ) => void;
   getMessagesWithMemory: () => Message[];
   getMemoryPrompt: () => Message;
+
   getConfig: () => ChatConfig;
   resetConfig: () => void;
   updateConfig: (updater: (config: ChatConfig) => void) => void;
   clearAllData: () => void;
 }
 
-const LOCAL_KEY = "qachat-pro-web-store";
+function countMessages(msgs: Message[]) {
+  return msgs.reduce((pre, cur) => pre + cur.content.length, 0);
+}
+
+const LOCAL_KEY = "qachat-pro-store";
 
 export const useChatStore = create<ChatStore>()(
   persist(
@@ -215,22 +222,27 @@ export const useChatStore = create<ChatStore>()(
       config: {
         ...DEFAULT_CONFIG,
       },
+
       resetConfig() {
         set(() => ({ config: { ...DEFAULT_CONFIG } }));
       },
+
       getConfig() {
         return get().config;
       },
+
       updateConfig(updater) {
         const config = get().config;
         updater(config);
         set(() => ({ config }));
       },
+
       selectSession(index: number) {
         set({
           currentSessionIndex: index,
         });
       },
+
       removeSession(index: number) {
         set((state) => {
           let nextIndex = state.currentSessionIndex;
@@ -255,12 +267,14 @@ export const useChatStore = create<ChatStore>()(
           };
         });
       },
+
       newSession() {
         set((state) => ({
           currentSessionIndex: 0,
           sessions: [createEmptySession()].concat(state.sessions),
         }));
       },
+
       currentSession() {
         let index = get().currentSessionIndex;
         const sessions = get().sessions;
@@ -274,6 +288,7 @@ export const useChatStore = create<ChatStore>()(
 
         return session;
       },
+
       onNewMessage(message) {
         get().updateCurrentSession((session) => {
           session.lastUpdate = new Date().toLocaleString();
@@ -281,6 +296,7 @@ export const useChatStore = create<ChatStore>()(
         get().updateStat(message);
         get().summarizeSession();
       },
+
       async onUserInput(content) {
         const userMessage: Message = {
           role: "user",
@@ -307,9 +323,11 @@ export const useChatStore = create<ChatStore>()(
           session.messages.push(botMessage);
         });
 
+        // make request
         // console.log("[User Input] ", sendMessages);
         requestChatStream(sendMessages, {
           onMessage(content, done) {
+            // stream response
             if (done) {
               botMessage.streaming = false;
               botMessage.content = content;
@@ -331,14 +349,14 @@ export const useChatStore = create<ChatStore>()(
             ControllerPool.addController(
               sessionIndex,
               messageIndex,
-              controller
+              controller,
             );
           },
           filterBot: !get().config.sendBotMessages,
           modelConfig: get().config.modelConfig,
-          apiKey: get().config.apiKey,
         });
       },
+
       getMemoryPrompt() {
         const session = get().currentSession();
 
@@ -348,12 +366,13 @@ export const useChatStore = create<ChatStore>()(
           date: "",
         } as Message;
       },
+
       getMessagesWithMemory() {
         const session = get().currentSession();
         const config = get().config;
         const n = session.messages.length;
         const recentMessages = session.messages.slice(
-          n - config.historyMessageCount
+          n - config.historyMessageCount,
         );
 
         const memoryPrompt = get().getMemoryPrompt();
@@ -364,10 +383,11 @@ export const useChatStore = create<ChatStore>()(
 
         return recentMessages;
       },
+
       updateMessage(
         sessionIndex: number,
         messageIndex: number,
-        updater: (message?: Message) => void
+        updater: (message?: Message) => void,
       ) {
         const sessions = get().sessions;
         const session = sessions.at(sessionIndex);
@@ -375,32 +395,34 @@ export const useChatStore = create<ChatStore>()(
         updater(messages?.at(messageIndex));
         set(() => ({ sessions }));
       },
+
       summarizeSession() {
         const session = get().currentSession();
 
-        if (session.topic === DEFAULT_TOPIC && session.messages.length >= 3) {
-          // should summarize topic
+        // should summarize topic after chating more than 50 words
+        const SUMMARIZE_MIN_LEN = 50;
+        if (
+          session.topic === DEFAULT_TOPIC &&
+          countMessages(session.messages) >= SUMMARIZE_MIN_LEN
+        ) {
           requestWithPrompt(session.messages, Locale.Store.Prompt.Topic).then(
             (res) => {
               get().updateCurrentSession(
-                (session) => (session.topic = trimTopic(res))
+                (session) => (session.topic = trimTopic(res)),
               );
-            }
+            },
           );
         }
 
         const config = get().config;
         let toBeSummarizedMsgs = session.messages.slice(
-          session.lastSummarizeIndex
+          session.lastSummarizeIndex,
         );
-        const historyMsgLength = toBeSummarizedMsgs.reduce(
-          (pre, cur) => pre + cur.content.length,
-          0
-        );
+        const historyMsgLength = countMessages(toBeSummarizedMsgs);
 
         if (historyMsgLength > 4000) {
           toBeSummarizedMsgs = toBeSummarizedMsgs.slice(
-            -config.historyMessageCount
+            -config.historyMessageCount,
           );
         }
 
@@ -413,7 +435,7 @@ export const useChatStore = create<ChatStore>()(
         //   "[Chat History] ",
         //   toBeSummarizedMsgs,
         //   historyMsgLength,
-        //   config.compressMessageLengthThreshold
+        //   config.compressMessageLengthThreshold,
         // );
 
         if (historyMsgLength > config.compressMessageLengthThreshold) {
@@ -428,29 +450,32 @@ export const useChatStore = create<ChatStore>()(
               onMessage(message, done) {
                 session.memoryPrompt = message;
                 if (done) {
-                  // console.log("[Memory] ", session.memoryPrompt);
+                  console.log("[Memory] ", session.memoryPrompt);
                   session.lastSummarizeIndex = lastSummarizeIndex;
                 }
               },
               onError(error) {
                 console.error("[Summarize] ", error);
               },
-            }
+            },
           );
         }
       },
+
       updateStat(message) {
         get().updateCurrentSession((session) => {
           session.stat.charCount += message.content.length;
           // TODO: should update chat count and word count
         });
       },
+
       updateCurrentSession(updater) {
         const sessions = get().sessions;
         const index = get().currentSessionIndex;
         updater(sessions[index]);
         set(() => ({ sessions }));
       },
+
       clearAllData() {
         if (confirm(Locale.Store.ConfirmClearAll)) {
           localStorage.clear();
@@ -461,6 +486,6 @@ export const useChatStore = create<ChatStore>()(
     {
       name: LOCAL_KEY,
       version: 1,
-    }
-  )
+    },
+  ),
 );

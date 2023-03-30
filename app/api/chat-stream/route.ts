@@ -1,24 +1,12 @@
-import type { ChatRequest } from "../chat/typing";
 import { createParser } from "eventsource-parser";
 import { NextRequest } from "next/server";
+import { requestOpenai } from "../common";
 
-const apiKey = process.env.OPENAI_API_KEY;
-
-async function createStream(
-  payload: ReadableStream<Uint8Array>,
-  customKey: string
-) {
+async function createStream(req: NextRequest) {
   const encoder = new TextEncoder();
   const decoder = new TextDecoder();
 
-  const res = await fetch("https://api.openai.com/v1/chat/completions", {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${customKey !== "" ? customKey : apiKey}`,
-    },
-    method: "POST",
-    body: payload,
-  });
+  const res = await requestOpenai(req);
 
   const stream = new ReadableStream({
     async start(controller) {
@@ -52,10 +40,7 @@ async function createStream(
 
 export async function POST(req: NextRequest) {
   try {
-    const stream = await createStream(
-      req.body!,
-      req.headers.get("authorization") ?? ""
-    );
+    const stream = await createStream(req);
     return new Response(stream);
   } catch (error) {
     console.error("[Chat Stream]", error);
