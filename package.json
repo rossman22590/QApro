@@ -4,8 +4,8 @@
   "private": false,
   "license": "Anti 996",
   "scripts": {
-    "dev": "pnpm fetch && next dev",
-    "build": "pnpm fetch && next build",
+    "dev": "pnpm run fetch && next dev",
+    "build": "pnpm run fetch && next build",
     "start": "next start",
     "lint": "next lint",
     "fetch": "node ./scripts/fetch-prompts.mjs",
