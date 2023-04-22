@@ -653,14 +653,14 @@ export function Home() {
                 <IconButton icon={<GithubIcon />} />
               </a>
             </div>
-            <div className={styles["sidebar-action"]} title="打赏">
+            {/* <div className={styles["sidebar-action"]} title="打赏">
               <a
                 className={styles["sidebar-action-pay"]}
                 href={PAY_URL}
                 target="_blank">
                 <IconButton icon={<span>赏</span>} />
               </a>
-            </div>
+            </div> */}
           </div>
           <div>
             <IconButton
@@ -672,7 +672,7 @@ export function Home() {
             />
           </div>
         </div>
-        <div className={styles["sidebar-links"]}>
+        {/* <div className={styles["sidebar-links"]}>
           <a href={AD_URL} target="_blank">
             购买密钥/账号
           </a>
@@ -681,7 +681,7 @@ export function Home() {
             旧版
           </a>
           ·<a href="javascript:;;">Q群634323049</a>
-        </div>
+        </div> */}
       </div>
 
       <div className={styles["window-content"]}>
